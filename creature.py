@@ -1,6 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
 import numpy as np
 
 class Creature:
@@ -34,6 +31,10 @@ class Creature:
     self.is_alive = True
   
   def move_and_grab(self, field):
+    """Move along the field (see Field.py) and store any food you find.
+
+    Most creatures move 1 space in random dir., fast creatures move 2 spaces.
+    """
     # udlr = up, down, left, right - choices for movement.
     udlr = [[0,1], [0,-1], [-1,0], [1,0]]
     which_dir = udlr[np.random.choice(4)]
@@ -85,7 +86,9 @@ class Creature:
     # Eat, if you can (die if you can't.)
     self._eat(food_required)
     if not self.is_alive or self.food_stored < food_required:
+      # No babies if after eating you are dead or don't have enough food.
       return []
+    # Else, reproduce.
     return self._reproduce(food_required)
 
   def _eat(self, food_required):
