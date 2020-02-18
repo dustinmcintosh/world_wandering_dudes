@@ -84,9 +84,9 @@ class Creature:
     food_required = (0.5 if self.mutation=="EFFICIENT" else 1)
     # Eat, if you can (die if you can't.)
     self._eat(food_required)
-    if not self.alive or self.food_stored < food_required:
+    if not self.is_alive or self.food_stored < food_required:
       return []
-    return self._reproduce()
+    return self._reproduce(food_required)
 
   def _eat(self, food_required):
     """Eats food_required food from food_stored; dies if not enough food.
@@ -97,7 +97,7 @@ class Creature:
     self.food_stored -= food_required
     if self.food_stored < 0:
       # Dead. Poor dude. :(
-      self.alive = False
+      self.is_alive = False
 
   def _reproduce(self, food_required):
     """Reproduces if has sufficient food.
@@ -109,11 +109,11 @@ class Creature:
     """
     self.food_stored -= food_required
     return [Creature(self.location.copy(),
-                     mutation=self.mutation,
+                     mutation=_get_mutation(self.reproduction_mutation_chance),
                      mutation_chance=self.reproduction_mutation_chance
-            )._maybe_mutate(self.reproduction_mutation_chance)]
+            )]
 
-  def _maybe_mutate(self, mutation_chance):
+  def _get_mutation(self, mutation_chance):
     """Mutates randomly (perhaps to own species) w/ prob mutation_chance.
 
     Arguments:
@@ -121,6 +121,6 @@ class Creature:
     Returns:
       mutation: string; see list of acceptable mutations above.
     """
-    if np.random.rand()<mutation_chance:
+    if np.random.rand() < mutation_chance:
       return np.random.choice(['NORMAL', 'EFFICIENT', 'SPEEDY'])
     return self.mutation
