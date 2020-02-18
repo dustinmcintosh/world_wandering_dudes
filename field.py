@@ -21,11 +21,7 @@ class Field:
     food_grid: np.array; Square array of floating point numbers > 0. Number
       indicates the amount of food at each location.
   """
-  def __init__(self,
-               field_size,
-               # food_fill_factor=0,
-               # food_value=1,
-               has_boundaries=False):
+  def __init__(self, field_size, has_boundaries=False):
     self.field_size = field_size
     self.has_boundaries = has_boundaries
     self.food_grid = np.array(
