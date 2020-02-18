@@ -6,6 +6,12 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 class Field:
+  """
+  Create a field object which is a square 2D lattice with food on it.  
+
+  The field is specified by a square array of 0's.  Food on the field is
+  specified by any number > 0 that appears on the lattice.
+  """
   def __init__(self, field_size, food_fill_factor=0, has_boundaries=False):
     self.field_size = field_size
     self.has_boundaries = has_boundaries
@@ -36,7 +42,8 @@ class Field:
                      low_grid_y_index+r%(width)] += 1
 
   def spoil(self):
-    self.food_grid = np.array([[0 for x in range(self.field_size)] for y in range(self.field_size)])
+    self.food_grid = np.array(
+      [[0 for x in range(self.field_size)] for y in range(self.field_size)])
 
   def remove_food(self, location):
     # removes all food from the specified location on the field.
