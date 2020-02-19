@@ -114,10 +114,13 @@ class Creature:
       [creature] length 1; A single (possibly mutated) offspring.
     """
     self.food_stored -= food_required
-    return [Creature(self.location.copy(),
-                     mutation=self._get_mutation(self.reproduction_mutation_chance),
-                     reproduction_mutation_chance=self.reproduction_mutation_chance
-            )]
+    return [
+        Creature(
+          self.location.copy(),
+          mutation=self._get_mutation(self.reproduction_mutation_chance),
+          reproduction_mutation_chance=self.reproduction_mutation_chance
+      )
+    ]
 
   def _get_mutation(self, mutation_chance):
     """Mutates randomly (perhaps to own species) w/ prob mutation_chance.
