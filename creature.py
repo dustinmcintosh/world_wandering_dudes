@@ -4,12 +4,12 @@ class Creature:
   """ Creates a creature object with specified location and mutation chars.
 
   Creatures take random walks, grabbing food as they go. They have a chance to
-  mutate characteristics. 
+  mutate characteristics.
   Mutations include
     NORMAL: takes 1 step, eats 1 food (+1 more to reproduce).
     SPEEDY: takes 2 steps, eats 1 food (+1 more to reproduce).
     EFFICIENT: takes 1 step, eats 0.5 food (0.5 more to reproduce).
-  
+
   Arguments:
     location: list of length 2; Location of the creature.
     mutation: string; See supported mutations above.
@@ -18,18 +18,21 @@ class Creature:
 
   Other attributes:
     food_stored: float; Amount of food the creature has currently.
-    age: How many days the creature has survived - controlled by the creature's 
+    age: How many days the creature has survived - controlled by the creature's
       world.
     is_alive: bool; indicates if creature is alive
   """
-  def __init__(self, location, mutation="NORMAL", mutation_chance=0):
+  def __init__(self,
+               location,
+               mutation="NORMAL",
+               reproduction_mutation_chance=0):
     self.location = location
     self.food_stored = 0
     self.mutation = mutation
-    self.reproduction_mutation_chance = mutation_chance
+    self.reproduction_mutation_chance = reproduction_mutation_chance
     self.age = 0
     self.is_alive = True
-  
+
   def move_and_grab(self, field):
     """Move along the field (see Field.py) and store any food you find.
 
@@ -39,7 +42,7 @@ class Creature:
     udlr = [[0,1], [0,-1], [-1,0], [1,0]]
     which_dir = udlr[np.random.choice(4)]
 
-    # Creatures move 1. 
+    # Creatures move 1.
     steps_to_take = 1
     # Speedy creatures get a boost.
     if self.mutation == "SPEEDY":
@@ -75,7 +78,7 @@ class Creature:
     """Creatures eat, possibly die, and possibly reproduce depending on food.
 
     Most creatures require 1 food to eat, 1 food to reproduce.  They die if they
-    cannot eat. EFFICIENT creatures require 0.5 food to eat/reproduce. This 
+    cannot eat. EFFICIENT creatures require 0.5 food to eat/reproduce. This
 
     Returns: (survived, babies)
       babies: [creatures]; A list of creatures resulting from reproduction
@@ -112,8 +115,8 @@ class Creature:
     """
     self.food_stored -= food_required
     return [Creature(self.location.copy(),
-                     mutation=_get_mutation(self.reproduction_mutation_chance),
-                     mutation_chance=self.reproduction_mutation_chance
+                     mutation=self._get_mutation(self.reproduction_mutation_chance),
+                     reproduction_mutation_chance=self.reproduction_mutation_chance
             )]
 
   def _get_mutation(self, mutation_chance):

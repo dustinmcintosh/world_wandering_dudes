@@ -59,6 +59,8 @@ class World:
       num_creatures: int; Number of creatures to add to map.
       mutation: string; Type of mutation for the creatures (see Creature.py).
       reproduction_mutation_chance
+      mutation: string; Mutation of the creature.
+      reproduction_mutation_chance: Chance to mutate upor reproduction.
     """
     all_my_creatures  = []
     for randy in np.random.choice(self.field.field_size**2,
