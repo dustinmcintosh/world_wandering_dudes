@@ -91,6 +91,7 @@ class World:
       creature_loc[dude.location[0], dude.location[1]] = 1
 
     ax.spy(creature_loc, markersize=3*increment_size, c="r")
+    ax.set_title('days passed', self.days_passed)
     if save_plot:
       fig.savefig(
         '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' +
