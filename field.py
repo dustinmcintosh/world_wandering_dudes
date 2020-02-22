@@ -6,13 +6,13 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 class Field:
-  """Create a field object which is a square 2D lattice with food on it.  
+  """Create a field object which is a square 2D lattice with food on it.
 
   The field is specified by a square array of 0's.  Food on the field is
   specified by any number > 0 that appears on the lattice.
 
   Arguments:
-    field_size: Int; Linear dimension (height or width) of the square field. 
+    field_size: Int; Linear dimension (height or width) of the square field.
     has_boundaries: Bool; Does the field have boundaries? Creatures that run off
       the edge of a field without boundaries will appear on the opposite edge.
       Defaults to False (field w/ no boundaries).
@@ -27,11 +27,11 @@ class Field:
     self.food_grid = np.array(
       [[0 for x in range(field_size)] for y in range(field_size)]
     )
-  
+
   def sprout(self,
-             food_fill_factor, 
+             food_fill_factor,
              food_value=1,
-             low_grid_x_index=0, high_grid_x_index=0, 
+             low_grid_x_index=0, high_grid_x_index=0,
              low_grid_y_index=0, high_grid_y_index=0):
     """Fills the field (or a section of it) randomly with some food.
 
@@ -39,7 +39,7 @@ class Field:
       food_fill_factor: float; Fraction, in range [0,1], of the section of
         field to fill with food.
       food_value: float; How much food to add to each spot on the field.
-        Defaults to 1. 
+        Defaults to 1.
       low_grid_x_index: int, [0, self.field_size). x-index of lower left corner
       of the section of field to sprout. Defaults to 0.
       high_grid_x_index: int, [low_grid_x_index, self.field_size). x-index of
@@ -51,7 +51,7 @@ class Field:
       upper right corner of the section of field to sprout. Defaults to 0 (which
       is interpreted as self.field_size).
     """
-    # Check food_fill_factor makes sense. 
+    # Check food_fill_factor makes sense.
     if food_fill_factor < 0 or food_fill_factor > 1:
       raise(
         "food_fill_factor must be between 0 and 1, got" + str(food_fill_factor)
@@ -84,7 +84,7 @@ class Field:
 
   def remove_food(self, location):
     """Removes all food from the specified location on the field.
-    
+
     Arguments:
       location: list of length 2.  Location on field to remove food from.
     Returns:
@@ -96,7 +96,7 @@ class Field:
 
   def show_me(self, save_plot=False):
     """Plots the field and food on the field.
-    
+
     Arguments:
       save_plot: bool; Whether or not to save the plot to disc.
     """
@@ -107,5 +107,6 @@ class Field:
     ax.spy(self.food_grid, markersize=3, c="g")
     if save_plot:
       fig.savefig(
-        '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' + 
+        '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' +
         datetime.now().strftime("field_%Y%m%d%H%M%S%f.png"), fmt='png')
+      plt.close()

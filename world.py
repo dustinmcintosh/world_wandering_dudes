@@ -1,5 +1,5 @@
-import creature
-import field
+from creature import Creature
+from field import Field
 
 import collections
 from datetime import datetime
@@ -29,8 +29,17 @@ class World:
   The world is populated by a set of creatures and a square field.
 
   Arguments:
-    field_size: L
-  """
+    field_size: int; Length of a side of the square field
+    food_fill_factor: float; Fraction of the field that will be populated
+      randomly by food each day
+    num_creatures: int; Number of creatures to initally populate on the field
+      with random location.
+    mutation: string; Mutation type of the initial creatures.
+    reproduction_mutation_chance: float; Probability that the creatures will
+      mutate upon reproduction.
+    food_spoils: bool; Does the food in the world, on the field and stored by
+      creatures spoil (disappear) at the end of the day?
+    """
   def __init__(self,
                field_size,
                food_fill_factor,
@@ -47,6 +56,7 @@ class World:
     )
     self.days_passed = 0
     self.history = []
+    self.food_fill_factor = food_fill_factor
     self.food_spoils = food_spoils
 
   def create_creatures(self,
@@ -61,6 +71,9 @@ class World:
       reproduction_mutation_chance
       mutation: string; Mutation of the creature.
       reproduction_mutation_chance: Chance to mutate upor reproduction.
+
+    Returns:
+      [Creature]; A list of creatures.
     """
     all_my_creatures  = []
     for randy in np.random.choice(self.field.field_size**2,
@@ -97,6 +110,7 @@ class World:
       fig.savefig(
         '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' +
         datetime.now().strftime("world_%Y%m%d%H%M%S%f.png"), fmt='png')
+      plt.close()
 
   def pass_day(self, steps_in_day):
     """Pass a day of length steps_in_day throughout the world.
@@ -135,10 +149,10 @@ class World:
     if self.food_spoils:
       self.field.spoil()
       for this_creature in self.creatures:
-        creature.food_stored=0
+        this_creature.food_stored=0
 
     # The land is fertile! :)
-    self.field.sprout(0.01)
+    self.field.sprout(self.food_fill_factor)
 
     # Long day...
     self.days_passed += 1
@@ -220,7 +234,8 @@ class World:
                     max([x.food_on_field for x in self.history])*1.05,
                     'food_on_field')
 
-    labels, counts = np.unique([x.age for x in my_world.history[-1].creature_list], return_counts=True)
+    labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
+                               return_counts=True)
     axes[2,0].bar(labels, counts, align='center')
     axes[2,0].set_xlabel('age')
     axes[2,0].set_ylabel('num_creatures')
