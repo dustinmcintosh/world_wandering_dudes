@@ -83,13 +83,13 @@ class Creature:
     Returns: (survived, babies)
       babies: [creatures]; A list of creatures resulting from reproduction
     """
-    # Got a little be it older.
+    # Got a little bit older.
     self.age += 1
     food_required = (0.5 if self.mutation=="EFFICIENT" else 1)
     # Eat, if you can (die if you can't.)
     self._eat(food_required)
     if not self.is_alive or self.food_stored < food_required:
-      # No babies if after eating you are dead or don't have enough food.
+      # No babies if, after eating, you are dead or don't have enough food.
       return []
     # Else, reproduce.
     return self._reproduce(food_required)

@@ -162,11 +162,7 @@ class World:
     """Record a line in the history books.
 
     Arguments:
-      births: int; Number of births to record.
       deaths: int; Number of deaths to record.
-      total_food_stored: Total food stored between all creatures to record.
-      food_on_field: Total food on the field to record.
-      mutations: Map from mutation string and count of live creatures.
     """
     total_food_stored = 0
     mutations = {'NORMAL':0, 'SPEEDY':0, "EFFICIENT":0}
@@ -245,3 +241,4 @@ class World:
       fig.savefig(
         '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' +
         datetime.now().strftime("world_history_%Y%m%d%H%M%S%f.png"), fmt='png')
+      plt.close()
