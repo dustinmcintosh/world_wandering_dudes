@@ -1,4 +1,4 @@
-# Overview
+## Overview
 
 This repository contains a framework for examining population dynamics and natural selection. The basic element of the framework is a world, which consists of a field and a set of creatures that occupy the field. Food is on the field (the field can sprout new food and food can spoil).  Time progresses in the world as follows:
 
@@ -14,6 +14,7 @@ This repository contains a framework for examining population dynamics and natur
 
     c. The food throughout the world may spoil, and the field will resprout food.
     
+## Examples
 The simulation results are random and strongly dependent on the properties of the world:
 ![](the_first_days.gif)
 
