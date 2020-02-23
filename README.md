@@ -15,6 +15,10 @@ This repository contains a framework for examining population dynamics and natur
     c. The food throughout the world may spoil, and the field will resprout food.
     
 The simulation results are random and strongly dependent on the properties of the world:
-
  ![](the_first_days.gif)
+ 
+ Looking over the course of many days:
+  ![](each_day.gif)
+
+  
  
