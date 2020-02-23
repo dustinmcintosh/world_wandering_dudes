@@ -16,10 +16,10 @@ This repository contains a framework for examining population dynamics and natur
     
 ## Example
 The simulation results are random and strongly dependent on the properties of the world:
-![](the_first_days.gif)
+![](the_first_days.gif)  
 
 Looking over the course of many days:                                                  
-![](each_day.gif)
+![](each_day.gif)  
 
 We can also look at stats on the creatures/field throughout the world's history:  
-![](example_history.png)
+![](example_history.png)  
