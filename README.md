@@ -13,3 +13,5 @@ This repository contains a framework for examining population dynamics and natur
     b. If, after eating, the creature has enough food, it will reproduce, creating another creature at it’s same location.  This creaturee may
 
     c. The food throughout the world may spoil, and the field will resprout food.
+
+ ![](the_first_days.gif)
