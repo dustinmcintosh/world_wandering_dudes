@@ -93,8 +93,8 @@ class World:
       save_plot: bool; Whether or not to save the plot to disc.
       time_of_day: int; if set, will display in the title
     """
-    increment_size = float(100)/self.field.field_size
-    fig, ax = plt.subplots(1,1, figsize = (9, 9))
+    increment_size = float(100/1.5)/self.field.field_size
+    fig, ax = plt.subplots(1,1, figsize = (6, 6))
     ax.spy(
       [[1 for x in range(self.field.field_size)] for y in range(self.field.field_size)],
         markersize=6*increment_size, c="palegoldenrod")
@@ -203,21 +203,28 @@ class World:
       save_plot: bool; Save the plot to disc?
     """
     fig,axes = plt.subplots(3, 3, figsize = (18, 9))
+    num_creatures_history = [x.num_creatures for x in self.history]
+    num_births_history = [x.num_births for x in self.history]
+    num_deaths_history = [x.num_deaths for x in self.history]
+    total_food_stored_history = [x.total_food_stored for x in self.history]
+    food_on_field_history = [x.food_on_field for x in self.history]
     upper_y = max([x.num_creatures for x in self.history])*1.05
 
-    def _set_properties(ax, upper_y, y_label):
+    def _set_properties(ax, upper_y, y_label, x_label=None):
       ax.grid(b=True, which='major')
+      if type(x_label) == str:
+        ax.set_xlabel(x_label)
       ax.set_ylabel(y_label)
       ax.set_ylim(0, upper_y)
 
-    axes[0,0].plot([x.num_creatures for x in self.history])
-    _set_properties(axes[0,0], upper_y, 'num_creatures')
+    axes[0,0].plot(num_creatures_history)
+    _set_properties(axes[0,0], upper_y, 'Creatures')
 
-    axes[0,1].plot([x.num_births for x in self.history])
-    _set_properties(axes[0,1], upper_y, 'num_births')
+    axes[0,1].plot(num_births_history)
+    _set_properties(axes[0,1], upper_y, 'Births')
 
-    axes[0,2].plot([x.num_deaths for x in self.history])
-    _set_properties(axes[0,2], upper_y, 'num_deaths')
+    axes[0,2].plot(num_deaths_history)
+    _set_properties(axes[0,2], upper_y, 'Deaths')
 
     normals = np.array([x.num_normals for x in self.history])
     speedys = np.array([x.num_speedys for x in self.history])
@@ -229,24 +236,50 @@ class World:
                            normals + speedys,
                            normals + speedys + efficients)
     axes[1,0].legend(['NORMAL', 'SPEEDY', 'EFFICIENT'], loc='center left')
-    _set_properties(axes[1,0], upper_y, 'num_creatures')
+    _set_properties(axes[1,0], upper_y, 'Creatures')
 
-    axes[1,1].plot([x.total_food_stored for x in self.history])
+    axes[1,1].plot(total_food_stored_history)
     _set_properties(axes[1,1],
-                    max([x.total_food_stored for x in self.history])*1.05,
-                    'total_food_stored')
+                    max(total_food_stored_history)*1.05,
+                    'Total Food Stored')
 
-    axes[1,2].plot([x.food_on_field for x in self.history])
+    axes[1,2].plot(food_on_field_history)
     _set_properties(axes[1,2],
-                    max([x.food_on_field for x in self.history])*1.05,
-                    'food_on_field')
+                    max(food_on_field_history)*1.05,
+                    'Food on the field')
+
+    axes[2,0].plot(num_births_history,
+                   num_creatures_history)
+    _set_properties(axes[2,0],
+                    max(num_creatures_history)*1.05,
+                    'Creatures', x_label='Births')
+
+    day_history = [x.day for x in self.history]
+    for i, txt in enumerate(day_history):
+      if i%np.floor(len(day_history)/10) == 0:
+        axes[2,0].annotate(str(txt),
+                           (num_births_history[i], num_creatures_history[i]))
+
+    axes[2,1].plot(food_on_field_history,
+                   total_food_stored_history)
+    _set_properties(axes[2,1],
+                    max(food_on_field_history)*1.05,
+                    'Food on the field', x_label='Total Food Stored')
+
+    for i, txt in enumerate(day_history):
+      if i%np.floor(len(day_history)/10) == 0:
+        axes[2,1].annotate(str(txt),
+                           (food_on_field_history[i],
+                            total_food_stored_history[i]))
 
     labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
                                return_counts=True)
-    axes[2,0].bar(labels, counts, align='center')
-    axes[2,0].set_xlabel('age')
-    axes[2,0].set_ylabel('num_creatures')
-    axes[2,0].set_title('Final age distribution')
+    axes[2,2].bar(labels, counts, align='center')
+    axes[2,2].set_xlabel('Age')
+    axes[2,2].set_ylabel('Creatures')
+    axes[2,2].set_title('Final age distribution')
+
+    fig.tight_layout()
 
     if save_plot:
       fig.savefig(

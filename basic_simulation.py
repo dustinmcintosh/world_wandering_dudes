@@ -4,10 +4,18 @@ import glob
 import os
 
 def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
+  """Using Pillow image library to change alphabetical png files into gifs.
+
+  Arguments:
+    file_pattern: string; File pattern of the images to use.
+    gif_name: string; Filename to save ('.gif' will be appended automatically).
+  """
   frames = []
   directory = "/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/"
   imgs = glob.glob(directory + file_pattern)
-  for i in imgs:
+
+  # Open the images.
+  for i in sorted(imgs):
       frames.append(Image.open(i))
 
   # Save into looping gif file.
