@@ -86,11 +86,12 @@ class World:
       )
     return all_my_creatures
 
-  def show_me(self, save_plot=False):
+  def show_me(self, time_of_day=None, save_plot=False):
     """Plots the field, food, and creatures.
 
     Arguments:
       save_plot: bool; Whether or not to save the plot to disc.
+      time_of_day: int; if set, will display in the title
     """
     increment_size = float(100)/self.field.field_size
     fig, ax = plt.subplots(1,1, figsize = (9, 9))
@@ -104,15 +105,21 @@ class World:
       creature_loc[dude.location[0], dude.location[1]] = 1
 
     ax.spy(creature_loc, markersize=3*increment_size, c="r")
-    ax.set_title('Days passed: ' + str(self.days_passed))
+    my_title = 'Days passed: ' + str(self.days_passed)
+    if type(time_of_day) == int:
+      my_title += "; time: " + str(time_of_day)
+    ax.set_title(my_title)
 
     if save_plot:
-      fig.savefig(
-        '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' +
-        datetime.now().strftime("world_%Y%m%d%H%M%S%f.png"), fmt='png')
+      file_name = (
+        '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' + \
+        datetime.now().strftime("world_%Y%m%d%H%M%S%f"))
+      if type(time_of_day) == int:
+        file_name += "_t_%i" % (time_of_day)
+      fig.savefig(file_name + ".png", fmt='png')
       plt.close()
 
-  def pass_day(self, steps_in_day):
+  def pass_day(self, steps_in_day, plot_steps=False):
     """Pass a day of length steps_in_day throughout the world.
 
     Creatures will run around, grab food for each step in the day. At the end
@@ -122,15 +129,19 @@ class World:
 
     Arguments:
       save_plot: bool; Whether or not to save the plot to disc.
+      steps_in_day: int; how many times the creatures should move today
+      plot_steps: bool; should we save a pngs for every step today?
     """
     if self.days_passed == 0:
       # Record starting state (0 births or deaths).
       self._record_history(0)
 
     # Go, little dudes, go!!
-    for i in range(steps_in_day):
+    for t in range(steps_in_day):
       for this_creature in self.creatures:
         this_creature.move_and_grab(self.field)
+      if plot_steps:
+        self.show_me(save_plot=True, time_of_day=t)
 
     # Eat and reproduce, if you can, my dudes!
     dead_creature_indices = []
