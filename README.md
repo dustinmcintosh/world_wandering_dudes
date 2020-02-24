@@ -20,4 +20,4 @@ The simulation results are random and strongly dependent on the properties of th
 Looking over the course of many days:                                                  
 ![](each_day.gif)  
 We can also look at stats on the creatures/field throughout the world's history:  
-![](example_history.png)  
+![](example_history2.png)  
