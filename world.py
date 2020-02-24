@@ -9,7 +9,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 
-DailyStats = collections.namedtuple(
+DailyHistory = collections.namedtuple(
     'DailyHistory',
     ['day',
      'num_creatures',
@@ -184,7 +184,7 @@ class World:
     births = len([x for x in self.creatures if x.age == 0])
     food_on_field = sum(sum(self.field.food_grid))
 
-    self.history.append(DailyStats(day=self.days_passed,
+    self.history.append(DailyHistory(day=self.days_passed,
                                       num_creatures=len(self.creatures),
                                       num_normals=mutations['NORMAL'],
                                       num_efficients=mutations['EFFICIENT'],
