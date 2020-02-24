@@ -202,7 +202,7 @@ class World:
     Arguments:
       save_plot: bool; Save the plot to disc?
     """
-    fig,axes = plt.subplots(3, 3, figsize = (18, 9))
+    fig,axes = plt.subplots(2, 3, figsize = (18, 7))
     num_creatures_history = [x.num_creatures for x in self.history]
     num_births_history = [x.num_births for x in self.history]
     num_deaths_history = [x.num_deaths for x in self.history]
@@ -217,67 +217,61 @@ class World:
       ax.set_ylabel(y_label)
       ax.set_ylim(0, upper_y)
 
-    axes[0,0].plot(num_creatures_history)
-    _set_properties(axes[0,0], upper_y, 'Creatures')
-
-    axes[0,1].plot(num_births_history)
-    _set_properties(axes[0,1], upper_y, 'Births')
-
-    axes[0,2].plot(num_deaths_history)
-    _set_properties(axes[0,2], upper_y, 'Deaths')
+    axes[0,0].plot(num_creatures_history, 'b', label="Creatures")
+    axes[0,0].plot(num_births_history, 'g', label="Births")
+    axes[0,0].plot(num_deaths_history, 'r', label="Deaths")
+    _set_properties(axes[0,2], upper_y, 'Num Creatures')
+    axes[0,0].legend()
 
     normals = np.array([x.num_normals for x in self.history])
     speedys = np.array([x.num_speedys for x in self.history])
     efficients = np.array([x.num_efficients for x in self.history])
     date_range = range(len(self.history))
-    axes[1,0].fill_between(date_range, 0, normals)
-    axes[1,0].fill_between(date_range, normals, normals+speedys)
-    axes[1,0].fill_between(date_range,
+    axes[0,1].fill_between(date_range, 0, normals)
+    axes[0,1].fill_between(date_range, normals, normals+speedys)
+    axes[0,1].fill_between(date_range,
                            normals + speedys,
                            normals + speedys + efficients)
-    axes[1,0].legend(['NORMAL', 'SPEEDY', 'EFFICIENT'], loc='center left')
-    _set_properties(axes[1,0], upper_y, 'Creatures')
+    axes[0,1].legend(['NORMAL', 'SPEEDY', 'EFFICIENT'], loc='center left')
+    _set_properties(axes[0,1], upper_y, 'Creatures')
 
-    axes[1,1].plot(total_food_stored_history)
-    _set_properties(axes[1,1],
-                    max(total_food_stored_history)*1.05,
+    axes[0,2].plot(total_food_stored_history, 'b', label="Total Food Stored")
+    axes[0,2].plot(food_on_field_history, 'g', label="Food on Field")
+    _set_properties(axes[0,2],
+                    max(food_on_field_history + total_food_stored_history)*1.05,
                     'Total Food Stored')
+    axes[0,2].legend()
 
-    axes[1,2].plot(food_on_field_history)
-    _set_properties(axes[1,2],
-                    max(food_on_field_history)*1.05,
-                    'Food on the field')
-
-    axes[2,0].plot(num_births_history,
+    axes[1,0].plot(num_births_history,
                    num_creatures_history)
-    _set_properties(axes[2,0],
+    _set_properties(axes[1,0],
                     max(num_creatures_history)*1.05,
                     'Creatures', x_label='Births')
 
     day_history = [x.day for x in self.history]
     for i, txt in enumerate(day_history):
       if i%np.floor(len(day_history)/10) == 0:
-        axes[2,0].annotate(str(txt),
+        axes[1,0].annotate(str(txt),
                            (num_births_history[i], num_creatures_history[i]))
 
-    axes[2,1].plot(food_on_field_history,
+    axes[1,1].plot(food_on_field_history,
                    total_food_stored_history)
-    _set_properties(axes[2,1],
+    _set_properties(axes[1,1],
                     max(food_on_field_history)*1.05,
                     'Food on the field', x_label='Total Food Stored')
 
     for i, txt in enumerate(day_history):
       if i%np.floor(len(day_history)/10) == 0:
-        axes[2,1].annotate(str(txt),
+        axes[1,1].annotate(str(txt),
                            (food_on_field_history[i],
                             total_food_stored_history[i]))
 
     labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
                                return_counts=True)
-    axes[2,2].bar(labels, counts, align='center')
-    axes[2,2].set_xlabel('Age')
-    axes[2,2].set_ylabel('Creatures')
-    axes[2,2].set_title('Final age distribution')
+    axes[1,2].bar(labels, counts, align='center')
+    axes[1,2].set_xlabel('Age')
+    axes[1,2].set_ylabel('Creatures')
+    axes[1,2].set_title('Final age distribution')
 
     fig.tight_layout()
 
