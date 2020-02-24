@@ -98,7 +98,7 @@ class World:
     ax.spy(
       [[1 for x in range(self.field.field_size)] for y in range(self.field.field_size)],
         markersize=6*increment_size, c="palegoldenrod")
-    ax.spy(self.field.food_grid, markersize=3*increment_size, c="g")
+    ax.spy(self.field.food_grid, markersize=3*increment_size/1.5, c="g")
 
     creature_loc = self.field.food_grid*0
     for dude in self.creatures:
