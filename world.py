@@ -220,7 +220,7 @@ class World:
     axes[0,0].plot(num_creatures_history, 'b', label="Creatures")
     axes[0,0].plot(num_births_history, 'g', label="Births")
     axes[0,0].plot(num_deaths_history, 'r', label="Deaths")
-    _set_properties(axes[0,2], upper_y, 'Num Creatures')
+    _set_properties(axes[0,0], upper_y, 'Num Creatures')
     axes[0,0].legend()
 
     normals = np.array([x.num_normals for x in self.history])
@@ -258,7 +258,7 @@ class World:
                    total_food_stored_history)
     _set_properties(axes[1,1],
                     max(food_on_field_history)*1.05,
-                    'Food on the field', x_label='Total Food Stored')
+                    'Total Food Stored', x_label='Food on the field')
 
     for i, txt in enumerate(day_history):
       if i%np.floor(len(day_history)/10) == 0:

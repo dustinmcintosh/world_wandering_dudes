@@ -37,6 +37,7 @@ def main():
   directory = "/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/"
   if args.world_pkl:
     # Reuse old world.
+    print("reusing world ", args.world_pkl)
     with open(directory + args.world_pkl, "rb") as f:
       my_world=pickle.load(f)
   else:
@@ -47,8 +48,7 @@ def main():
     my_world.creatures[0].location = [20, 20]
 
   for i in range(40):
-    my_world.pass_day(40,
-                      plot_steps=(True if i < 5 else False))
+    my_world.pass_day(40, plot_steps=(True if i < 5 else False))
     if i < 21:
       my_world.show_me(save_plot=True)
     print("days_passed: ", my_world.days_passed,
