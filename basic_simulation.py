@@ -1,4 +1,5 @@
 from world import World, DailyHistory
+from SET_ME import TMP_DIR
 
 import argparse
 import glob
@@ -14,8 +15,7 @@ def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
     gif_name: string; Filename to save ('.gif' will be appended automatically).
   """
   frames = []
-  directory = "/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/"
-  imgs = glob.glob(directory + file_pattern)
+  imgs = glob.glob(TMP_DIR + file_pattern)
 
   # Open the images.
   for i in sorted(imgs):
@@ -34,11 +34,10 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--world_pkl", "-wp", help="pickled world file")
   args = parser.parse_args()
-  directory = "/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/"
   if args.world_pkl:
     # Reuse old world.
     print("reusing world ", args.world_pkl)
-    with open(directory + args.world_pkl, "rb") as f:
+    with open(TMP_DIR + args.world_pkl, "rb") as f:
       my_world=pickle.load(f)
   else:
     # Create a small world, with lots of food and 1 creature
@@ -57,7 +56,7 @@ def main():
   save_gif("*_t_*.png", "the_first_days", delete_imgs=True, frame_duration=100)
   save_gif("world_2*.png", "each_day", delete_imgs=True, frame_duration=800)
 
-  with open(directory+"my_world.pkl", "wb") as f:
+  with open(TMP_DIR + "my_world.pkl", "wb") as f:
     pickle.dump(my_world, f)
 
 if __name__ == "__main__":

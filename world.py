@@ -1,5 +1,6 @@
 from creature import Creature
 from field import Field
+from SET_ME import TMP_DIR
 
 import collections
 from datetime import datetime
@@ -111,9 +112,7 @@ class World:
     ax.set_title(my_title)
 
     if save_plot:
-      file_name = (
-        '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' + \
-        datetime.now().strftime("world_%Y%m%d%H%M%S%f"))
+      file_name = TMP_DIR + datetime.now().strftime("world_%Y%m%d%H%M%S%f")
       if type(time_of_day) == int:
         file_name += "_t_%i" % (time_of_day)
       fig.savefig(file_name + ".png", fmt='png')
@@ -277,6 +276,7 @@ class World:
 
     if save_plot:
       fig.savefig(
-        '/mnt/c/Users/dmcin/Desktop/projects/simulations/tmp_plots/' +
-        datetime.now().strftime("world_history_%Y%m%d%H%M%S%f.png"), fmt='png')
+        TMP_DIR + datetime.now().strftime("world_history_%Y%m%d%H%M%S%f.png"),
+        fmt='png'
+      )
       plt.close()
