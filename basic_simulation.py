@@ -22,7 +22,7 @@ def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
       frames.append(Image.open(i))
 
   # Save into looping gif file.
-  frames[0].save(directory + gif_name + '.gif',
+  frames[0].save(TMP_DIR + gif_name + '.gif',
                  format='GIF',
                  append_images=frames[1:],
                  save_all=True,

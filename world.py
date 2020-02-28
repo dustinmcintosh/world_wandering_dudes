@@ -14,9 +14,6 @@ DailyHistory = collections.namedtuple(
     'DailyHistory',
     ['day',
      'num_creatures',
-     'num_normals',
-     'num_efficients',
-     'num_speedys',
      'total_food_stored',
      'num_births',
      'num_deaths',
@@ -175,19 +172,14 @@ class World:
       deaths: int; Number of deaths to record.
     """
     total_food_stored = 0
-    mutations = {'NORMAL':0, 'SPEEDY':0, "EFFICIENT":0}
     for this_creature in self.creatures:
       total_food_stored += this_creature.food_stored
-      mutations[this_creature.mutation] += 1
 
     births = len([x for x in self.creatures if x.age == 0])
     food_on_field = sum(sum(self.field.food_grid))
 
     self.history.append(DailyHistory(day=self.days_passed,
                                       num_creatures=len(self.creatures),
-                                      num_normals=mutations['NORMAL'],
-                                      num_efficients=mutations['EFFICIENT'],
-                                      num_speedys=mutations['SPEEDY'],
                                       total_food_stored=total_food_stored,
                                       num_births=births,
                                       num_deaths=deaths,
@@ -202,12 +194,13 @@ class World:
       save_plot: bool; Save the plot to disc?
     """
     fig,axes = plt.subplots(2, 3, figsize = (18, 7))
+    day_history = [x.day for x in self.history]
     num_creatures_history = [x.num_creatures for x in self.history]
     num_births_history = [x.num_births for x in self.history]
     num_deaths_history = [x.num_deaths for x in self.history]
     total_food_stored_history = [x.total_food_stored for x in self.history]
     food_on_field_history = [x.food_on_field for x in self.history]
-    upper_y = max([x.num_creatures for x in self.history])*1.05
+    upper_y = max(num_creatures_history)*1.05
 
     def _set_properties(ax, upper_y, y_label, x_label=None):
       ax.grid(b=True, which='major')
@@ -216,22 +209,34 @@ class World:
       ax.set_ylabel(y_label)
       ax.set_ylim(0, upper_y)
 
-    axes[0,0].plot(num_creatures_history, 'b', label="Creatures")
-    axes[0,0].plot(num_births_history, 'g', label="Births")
-    axes[0,0].plot(num_deaths_history, 'r', label="Deaths")
+    axes[0,0].plot(day_history, num_creatures_history, 'b', label="Creatures")
+    axes[0,0].plot(day_history, num_births_history, 'g', label="Births")
+    axes[0,0].plot(day_history, num_deaths_history, 'r', label="Deaths")
     _set_properties(axes[0,0], upper_y, 'Num Creatures')
     axes[0,0].legend()
 
-    normals = np.array([x.num_normals for x in self.history])
-    speedys = np.array([x.num_speedys for x in self.history])
-    efficients = np.array([x.num_efficients for x in self.history])
-    date_range = range(len(self.history))
-    axes[0,1].fill_between(date_range, 0, normals)
-    axes[0,1].fill_between(date_range, normals, normals+speedys)
-    axes[0,1].fill_between(date_range,
-                           normals + speedys,
-                           normals + speedys + efficients)
-    axes[0,1].legend(['NORMAL', 'SPEEDY', 'EFFICIENT'], loc='center left')
+    mutations = set()
+    # Get the set of all mutations throughout history.
+    for this_day_history in self.history:
+      for this_creature in this_day_history.creature_list:
+        mutations.add(this_creature.mutation)
+
+    # Get the number of creatures with each mutation throughout history
+    mutation_cts_history = [dict.fromkeys(mutations, 0) for x in self.history]
+    for this_day_history in self.history:
+      for this_creature in this_day_history.creature_list:
+        mutation_cts_history[this_day_history.day][this_creature.mutation] += 1
+
+    running_sum = np.array([0 for x in range(len(self.history))])
+    for mut in sorted(mutations):
+      mut_ct_history = np.array([x[mut] for x in mutation_cts_history])
+      axes[0,1].fill_between(day_history,
+                             running_sum,
+                             running_sum + mut_ct_history,
+                             label = mut)
+      running_sum += mut_ct_history
+
+    axes[0,1].legend(loc='center left')
     _set_properties(axes[0,1], upper_y, 'Creatures')
 
     axes[0,2].plot(total_food_stored_history, 'b', label="Total Food Stored")
@@ -247,7 +252,7 @@ class World:
                     max(num_creatures_history)*1.05,
                     'Creatures', x_label='Births')
 
-    day_history = [x.day for x in self.history]
+
     for i, txt in enumerate(day_history):
       if i%np.floor(len(day_history)/10) == 0:
         axes[1,0].annotate(str(txt),
