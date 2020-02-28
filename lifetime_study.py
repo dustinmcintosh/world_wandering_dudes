@@ -115,7 +115,7 @@ def main():
                      fmt='.', label="field_size: %i" % (fs))
 
   ax[0,1].set_xlabel('Steps per day (0.03 food density)')
-  ax[0,1].set_ylabel('Avg creatures from day 100-200 / food sprout per day')
+  ax[0,1].set_ylabel('Avg creatures day 100-200 / food sprouted per day')
   ax[0,1].legend()
 
   ax[1,0].set_xlabel('Births per Creature')
