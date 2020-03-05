@@ -134,7 +134,9 @@ class World:
 
     # Go, little dudes, go!!
     for t in range(steps_in_day):
-      for this_creature in self.creatures:
+      for this_creature in np.random.choice(self.creatures,
+                                            len(self.creatures),
+                                            replace=False):
         this_creature.move_and_grab(self.field)
       if plot_steps:
         self.show_me(save_plot=True, time_of_day=t)

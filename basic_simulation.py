@@ -36,7 +36,7 @@ def main():
   args = parser.parse_args()
   if args.world_pkl:
     # Reuse old world.
-    print("reusing world ", args.world_pkl)
+    print("Reusing world ", args.world_pkl)
     with open(TMP_DIR + args.world_pkl, "rb") as f:
       my_world=pickle.load(f)
   else:
