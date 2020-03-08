@@ -25,7 +25,7 @@ Update the directory in SET_ME.py to your desired destination for figures.
 
 Run the sample code:
 ```bash
-python scripts.basic_simulation.py
+python scripts/basic_simulation.py
 ```
 
 
