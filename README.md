@@ -30,11 +30,11 @@ python scripts/basic_simulation.py
 
 
 ## Example
-The simulation results are random and strongly dependent on the properties of the world:
+The simulation results are random and strongly dependent on the properties of the world:   
 ![](figures/the_first_days.gif)
 
-Looking over the course of many days:
+Looking over the course of many days:   
 ![](figures/each_day.gif)
 
-We can also look at stats on the creatures/field throughout the world's history:
+We can also look at stats on the creatures/field throughout the world's history:   
 ![](figures/example_history3.png)
