@@ -42,13 +42,13 @@ def main():
   else:
     # Create a small world, with lots of food and 1 creature
     print("Creating World...")
-    my_world = World(50, 0.07, 1, reproduction_mutation_chance=0)
+    my_world = World(50, 0.07, 1, reproduction_mutation_chance=0.001)
     # Overwrite location to start the creature near the middle of the map.
     my_world.creatures[0].location = [20, 20]
 
   for i in range(40):
-    my_world.pass_day(40, plot_steps=(True if i < 5 else False))
-    if i < 21:
+    my_world.pass_day(40, plot_steps=(True if my_world.days_passed < 5 else False))
+    if my_world.days_passed < 21:
       my_world.show_me(save_plot=True)
     print("days_passed: ", my_world.days_passed,
           "; creatures: ", len(my_world.creatures))
