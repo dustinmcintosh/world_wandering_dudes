@@ -237,8 +237,9 @@ class World:
                              running_sum + mut_ct_history,
                              label = mut)
       running_sum += mut_ct_history
-
-    axes[0,1].legend(loc='center left')
+    handles, labels = axes[0,1].get_legend_handles_labels()
+    axes[0,1].legend(handles[::-1], labels[::-1], title='Line', loc='center left')
+    # axes[0,1].legend(loc='center left')
     _set_properties(axes[0,1], upper_y, 'Creatures')
 
     axes[0,2].plot(total_food_stored_history, 'b', label="Total Food Stored")

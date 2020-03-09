@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(1, sys.path[0]+'/..')
+
 from world import World, DailyHistory
 from SET_ME import TMP_DIR
 
@@ -16,6 +19,9 @@ def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
   """
   frames = []
   imgs = glob.glob(TMP_DIR + file_pattern)
+
+  if len(frames) == 0:
+    return
 
   # Open the images.
   for i in sorted(imgs):
@@ -47,7 +53,8 @@ def main():
     my_world.creatures[0].location = [20, 20]
 
   for i in range(40):
-    my_world.pass_day(40, plot_steps=(True if my_world.days_passed < 5 else False))
+    my_world.pass_day(40,
+                      plot_steps=(True if my_world.days_passed < 5 else False))
     if my_world.days_passed < 21:
       my_world.show_me(save_plot=True)
     print("days_passed: ", my_world.days_passed,
