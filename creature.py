@@ -25,15 +25,17 @@ class Creature:
   def __init__(self,
                location,
                mutation="NORMAL",
-               reproduction_mutation_chance=0):
+               reproduction_mutation_chance=0,
+               diet_type="VEGETARIAN"):
     self.location = location
     self.food_stored = 0
     self.mutation = mutation
     self.reproduction_mutation_chance = reproduction_mutation_chance
     self.age = 0
+    self.diet_type = diet_type
     self.is_alive = True
 
-  def move_and_grab(self, field):
+  def move_and_grab(self, world):
     """Move along the field (see Field.py) and store any food you find.
 
     Most creatures move 1 space in random dir., fast creatures move 2 spaces.
@@ -42,6 +44,10 @@ class Creature:
     udlr = [[0,1], [0,-1], [-1,0], [1,0]]
     which_dir = udlr[np.random.choice(4)]
 
+    # Dead creatures can't move (or grab). :(
+    if not self.is_alive:
+      return
+
     # Creatures move 1.
     steps_to_take = 1
     # Speedy creatures get a boost.
@@ -49,30 +55,36 @@ class Creature:
       steps_to_take = 2
 
     for i in range(steps_to_take):
-      if field.has_boundaries:
+      if world.field.has_boundaries:
         # Move or just run into the wall.
         self.location[0] = max(
-          min(self.location[0]+which_dir[0], field.field_size-1), 0
+          min(self.location[0]+which_dir[0], world.field.field_size-1), 0
         )
         self.location[1] = max(
-          min(self.location[1]+which_dir[1], field.field_size-1), 0
+          min(self.location[1]+which_dir[1], world.field.field_size-1), 0
         )
       else:
         # Move.
         self.location[0] = self.location[0]+which_dir[0]
         if self.location[0] < 0:
           # Teleport to the other side of the field.
-          self.location[0] = field.field_size-1
-        if self.location[0] > field.field_size-1:
+          self.location[0] = world.field.field_size-1
+        if self.location[0] > world.field.field_size-1:
           self.location[0] = 0
         self.location[1] = self.location[1]+which_dir[1]
         if self.location[1] < 0:
-          self.location[1] = field.field_size-1
-        if self.location[1] > field.field_size-1:
+          self.location[1] = world.field.field_size-1
+        if self.location[1] > world.field.field_size-1:
           self.location[1] = 0
 
       # Grab all the food from the field at this new location and store it.
-      self.food_stored += field.remove_food(self.location)
+      if self.diet_type == "VEGETARIAN":
+        self.food_stored += world.field.remove_food(self.location)
+      else:
+        for prey in [x for x in world.creatures if x.diet_type == "VEGETARIAN"]:
+          if self.location == prey.location:
+            prey.is_alive = False
+            self.food_stored += 1
 
   def eat_die_reproduce(self):
     """Creatures eat, possibly die, and possibly reproduce depending on food.
@@ -118,7 +130,8 @@ class Creature:
         Creature(
           self.location.copy(),
           mutation=self._get_mutation(self.reproduction_mutation_chance),
-          reproduction_mutation_chance=self.reproduction_mutation_chance
+          reproduction_mutation_chance=self.reproduction_mutation_chance,
+          diet_type=self.diet_type
       )
     ]
 

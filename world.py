@@ -60,7 +60,8 @@ class World:
   def create_creatures(self,
                        num_creatures,
                        mutation="NORMAL",
-                       reproduction_mutation_chance=0):
+                       reproduction_mutation_chance=0,
+                       diet_type="VEGETARIAN"):
     """Places num_creatures creatures randomly around the map.
 
     Arguments:
@@ -69,6 +70,7 @@ class World:
       reproduction_mutation_chance
       mutation: string; Mutation of the creature.
       reproduction_mutation_chance: Chance to mutate upor reproduction.
+      diet_type: "VEGETARIAN" or "CARNIVORE"
 
     Returns:
       [Creature]; A list of creatures.
@@ -78,9 +80,11 @@ class World:
                                   num_creatures, replace=False):
       all_my_creatures.append(
           Creature([int(np.floor(randy/self.field.field_size)),
-                    randy%self.field.field_size],
+                       randy%self.field.field_size],
                    mutation=mutation,
-                   reproduction_mutation_chance=reproduction_mutation_chance)
+                   reproduction_mutation_chance=reproduction_mutation_chance,
+                   diet_type=diet_type
+          )
       )
     return all_my_creatures
 
@@ -96,13 +100,28 @@ class World:
     ax.spy(
       [[1 for x in range(self.field.field_size)] for y in range(self.field.field_size)],
         markersize=6*increment_size, c="palegoldenrod")
-    ax.spy(self.field.food_grid, markersize=3*increment_size/1.5, c="g")
+    ax.spy(self.field.food_grid, markersize=1.5*increment_size, c="g")
 
-    creature_loc = self.field.food_grid*0
+    vegetarian_loc = self.field.food_grid*0
     for dude in self.creatures:
-      creature_loc[dude.location[0], dude.location[1]] = 1
+      if dude.diet_type == "VEGETARIAN" and dude.is_alive:
+        vegetarian_loc[dude.location[0], dude.location[1]] = 1
 
-    ax.spy(creature_loc, markersize=3*increment_size, c="r")
+    ax.spy(vegetarian_loc, markersize=2*increment_size, c="m")
+
+    dead_vegetarian_loc = self.field.food_grid*0
+    for dude in self.creatures:
+      if dude.diet_type == "VEGETARIAN" and not dude.is_alive:
+        dead_vegetarian_loc[dude.location[0], dude.location[1]] = 1
+
+    ax.spy(dead_vegetarian_loc, markersize=2*increment_size, c="k")
+
+    carnivore_loc = self.field.food_grid*0
+    for dude in [x for x in self.creatures if x.diet_type == "CARNIVORE"]:
+      carnivore_loc[dude.location[0], dude.location[1]] = 1
+
+    ax.spy(carnivore_loc, markersize=3*increment_size, c="r")
+
     my_title = 'Days passed: ' + str(self.days_passed)
     if type(time_of_day) == int:
       my_title += "; time: " + str(time_of_day)
@@ -137,7 +156,7 @@ class World:
       for this_creature in np.random.choice(self.creatures,
                                             len(self.creatures),
                                             replace=False):
-        this_creature.move_and_grab(self.field)
+        this_creature.move_and_grab(self)
       if plot_steps:
         self.show_me(save_plot=True, time_of_day=t)
 
@@ -273,12 +292,30 @@ class World:
                            (food_on_field_history[i],
                             total_food_stored_history[i]))
 
-    labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
-                               return_counts=True)
-    axes[1,2].bar(labels, counts, align='center')
-    axes[1,2].set_xlabel('Age')
-    axes[1,2].set_ylabel('Creatures')
-    axes[1,2].set_title('Final age distribution')
+    diet_types = set()
+    # Get the set of all mutations throughout history.
+    for this_day_history in self.history:
+      for this_creature in this_day_history.creature_list:
+        diet_types.add(this_creature.diet_type)
+
+    diet_type_cts_hist = [dict.fromkeys(diet_types, 0) for x in self.history]
+    for this_day_history in self.history:
+      for this_creature in this_day_history.creature_list:
+        diet_type_cts_hist[this_day_history.day][this_creature.diet_type] += 1
+    for dt in sorted(diet_types):
+      mut_ct_history = np.array([x[dt] for x in diet_type_cts_hist])
+      axes[1,2].plot(mut_ct_history, label=dt)
+
+    _set_properties(axes[1,2],
+                    max(num_creatures_history),
+                    'Num Creatures')
+    axes[1,2].legend()
+    # labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
+    #                            return_counts=True)
+    # axes[1,2].bar(labels, counts, align='center')
+    # axes[1,2].set_xlabel('Age')
+    # axes[1,2].set_ylabel('Creatures')
+    # axes[1,2].set_title('Final age distribution')
 
     fig.tight_layout()
 
