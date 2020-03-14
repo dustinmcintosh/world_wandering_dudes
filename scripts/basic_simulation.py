@@ -20,12 +20,12 @@ def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
   frames = []
   imgs = glob.glob(TMP_DIR + file_pattern)
 
-  if len(frames) == 0:
-    return
-
   # Open the images.
   for i in sorted(imgs):
       frames.append(Image.open(i))
+
+  if len(frames) == 0:
+    return
 
   # Save into looping gif file.
   frames[0].save(TMP_DIR + gif_name + '.gif',
