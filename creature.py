@@ -30,13 +30,15 @@ class Creature:
                location,
                mutation="NORMAL",
                reproduction_mutation_chance=0,
-               diet_type="VEGETARIAN"):
+               diet_type="VEGETARIAN",
+               babies_teleport=False):
     self.location = location
     self.food_stored = 0
     self.mutation = mutation
     self.reproduction_mutation_chance = reproduction_mutation_chance
     self.age = 0
     self.diet_type = diet_type
+    self.babies_teleport = babies_teleport
     self.is_alive = True
 
   def move_and_grab(self, world):
@@ -93,7 +95,7 @@ class Creature:
             prey.is_alive = False
             self.food_stored += 1
 
-  def eat_die_reproduce(self):
+  def eat_die_reproduce(self, world):
     """Creatures eat, possibly die, and possibly reproduce depending on food.
 
     Most creatures require 1 food to eat, 1 food to reproduce.  They die if they
@@ -111,7 +113,7 @@ class Creature:
       # No babies if, after eating, you are dead or don't have enough food.
       return []
     # Else, reproduce.
-    return self._reproduce(food_required)
+    return self._reproduce(food_required, world)
 
   def _eat(self, food_required):
     """Eats food_required food from food_stored; dies if not enough food.
@@ -124,21 +126,25 @@ class Creature:
       # Dead. Poor dude. :(
       self.is_alive = False
 
-  def _reproduce(self, food_required):
+  def _reproduce(self, food_required, world):
     """Reproduces if has sufficient food.
 
     Arguments:
-      food_required: float; amount of food the creature must eat to survive.
+      food_required: float; Amount of food the creature must eat to survive.
+      world: world; The world the creature lives in, if its babies teleport,
+        they will appear somewhere else randomly on the field.
     Returns:
       [creature] length 1; A single (possibly mutated) offspring.
     """
     self.food_stored -= food_required
     return [
         Creature(
-          self.location.copy(),
+          location=(self.location.copy() if not self.babies_teleport else
+              np.random.choice(range(world.field.field_size), 2)),
           mutation=self._get_mutation(self.reproduction_mutation_chance),
           reproduction_mutation_chance=self.reproduction_mutation_chance,
-          diet_type=self.diet_type
+          diet_type=self.diet_type,
+          babies_teleport=self.babies_teleport
       )
     ]
 

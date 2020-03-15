@@ -35,6 +35,8 @@ class World:
     mutation: string; Mutation type of the initial creatures.
     reproduction_mutation_chance: float; Probability that the creatures will
       mutate upon reproduction.
+    babies_teleport: Do the babies of the creatures teleport to a random
+      location on the field upon birth?
     food_spoils: bool; Does the food in the world, on the field and stored by
       creatures spoil (disappear) at the end of the day?
     """
@@ -44,6 +46,7 @@ class World:
                num_creatures,
                mutation="NORMAL",
                reproduction_mutation_chance=0,
+               babies_teleport=False,
                food_spoils=False):
     self.field = Field(field_size)
     self.field.sprout(food_fill_factor)
@@ -51,7 +54,8 @@ class World:
     self.create_creatures(
         num_creatures,
         mutation=mutation,
-        reproduction_mutation_chance=reproduction_mutation_chance
+        reproduction_mutation_chance=reproduction_mutation_chance,
+        babies_teleport=babies_teleport
     )
     self.days_passed = 0
     self.history = []
@@ -62,6 +66,7 @@ class World:
                        num_creatures,
                        mutation="NORMAL",
                        reproduction_mutation_chance=0,
+                       babies_teleport=False,
                        diet_type="VEGETARIAN"):
     """Places num_creatures creatures randomly around the map.
 
@@ -71,6 +76,8 @@ class World:
       reproduction_mutation_chance
       mutation: string; Mutation of the creature.
       reproduction_mutation_chance: Chance to mutate upor reproduction.
+      babies_teleport: Do the babies of the creatures teleport to a random
+        location on the field upon birth?
       diet_type: "VEGETARIAN" or "CARNIVORE"
 
     Returns:
@@ -85,7 +92,8 @@ class World:
                        randy%self.field.field_size],
                    mutation=mutation,
                    reproduction_mutation_chance=reproduction_mutation_chance,
-                   diet_type=diet_type
+                   diet_type=diet_type,
+                   babies_teleport=babies_teleport
           )
       )
 
@@ -165,7 +173,7 @@ class World:
     dead_creature_indices = []
     babies = []
     for this_creature in self.creatures:
-      babies += this_creature.eat_die_reproduce()
+      babies += this_creature.eat_die_reproduce(self)
 
     # Goodbye, loyal dudes! :(
     num_deaths = len([x for x in self.creatures if not x.is_alive])
