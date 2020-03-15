@@ -43,19 +43,24 @@ def main():
   args = parser.parse_args()
   if args.world_pkl:
     # Reuse old world.
-    print("Reusing world ", args.world_pkl)
+    print("Reusing world", args.world_pkl)
     with open(TMP_DIR + args.world_pkl, "rb") as f:
       my_world=pickle.load(f)
   else:
     # Create a small world, with lots of food and 1 creature
+    field_size = 75
+    food_density = 0.07
     print("Creating World...")
-    my_world = World(int(75*np.sqrt(10)), 0.025, 3250, reproduction_mutation_chance=0)
-    my_world.creatures += my_world.create_creatures(500, diet_type="CARNIVORE")
-    # Overwrite location to start the creature near the middle of the map.
+    my_world = World(field_size,
+                     food_density,
+                     int(field_size**2*food_density),
+                     reproduction_mutation_chance=0)
+    my_world.create_creatures(int(field_size**2*food_density/4),
+                              diet_type="CARNIVORE")
 
-  for i in range(40):
+  for i in range(1):
     my_world.pass_day(40,
-                      plot_steps=(True if i < 15 else False)) #my_world.days_passed
+                      plot_steps=(True if i < 15 else False))
     my_world.show_me(save_plot=True)
     print("days_passed:", my_world.days_passed,
           "; creatures:", len(my_world.creatures),

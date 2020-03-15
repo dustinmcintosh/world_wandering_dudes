@@ -47,7 +47,8 @@ class World:
                food_spoils=False):
     self.field = Field(field_size)
     self.field.sprout(food_fill_factor)
-    self.creatures = self.create_creatures(
+    self.creatures = []
+    self.create_creatures(
         num_creatures,
         mutation=mutation,
         reproduction_mutation_chance=reproduction_mutation_chance
@@ -77,8 +78,9 @@ class World:
     """
     all_my_creatures  = []
     for randy in np.random.choice(self.field.field_size**2,
-                                  num_creatures, replace=False):
-      all_my_creatures.append(
+                                  num_creatures,
+                                  replace=False):
+      self.creatures.append(
           Creature([int(np.floor(randy/self.field.field_size)),
                        randy%self.field.field_size],
                    mutation=mutation,
@@ -86,7 +88,6 @@ class World:
                    diet_type=diet_type
           )
       )
-    return all_my_creatures
 
   def show_me(self, time_of_day=None, save_plot=False):
     """Plots the field, food, and creatures.
@@ -100,14 +101,14 @@ class World:
     ax.spy(
       [[1 for x in range(self.field.field_size)] for y in range(self.field.field_size)],
         markersize=6*increment_size, c="palegoldenrod")
-    ax.spy(self.field.food_grid, markersize=1.5*increment_size, c="g")
+    ax.spy(self.field.food_grid, markersize=1*increment_size, c="g")
 
     vegetarian_loc = self.field.food_grid*0
     for dude in self.creatures:
       if dude.diet_type == "VEGETARIAN" and dude.is_alive:
         vegetarian_loc[dude.location[0], dude.location[1]] = 1
 
-    ax.spy(vegetarian_loc, markersize=2*increment_size, c="m")
+    ax.spy(vegetarian_loc, markersize=2*increment_size, c="b")
 
     dead_vegetarian_loc = self.field.food_grid*0
     for dude in self.creatures:
@@ -210,7 +211,7 @@ class World:
     Arguments:
       save_plot: bool; Save the plot to disc?
     """
-    fig,axes = plt.subplots(3, 3, figsize = (18, 12))
+    fig,axes = plt.subplots(4, 3, figsize = (18, 15))
     day_history = np.array([x.day for x in self.history])
     num_creatures_history = np.array([x.num_creatures for x in self.history])
     num_births_history = np.array([x.num_births for x in self.history])
@@ -225,16 +226,26 @@ class World:
       ax.set_ylabel(y_label)
       ax.set_ylim(0, upper_y)
 
-    axes[0,0].plot(day_history, num_creatures_history, 'k', label="Creatures")
-    axes[0,0].plot(day_history, num_births_history, 'g', label="Births")
-    axes[0,0].plot(day_history, num_deaths_history, 'r', label="Deaths")
-    axes[0,0].plot(total_food_stored_history, 'b', label="Total Food Stored")
-    axes[0,0].plot(food_on_field_history, 'm', label="Food on Field")
-    _set_properties(axes[0,0],
-                    max(max(num_creatures_history),
-                        max(food_on_field_history),
-                        max(total_food_stored_history))*1.05,
-                    '')
+    diet_types = set()
+    # Get the set of all mutations throughout history.
+    for this_day_history in self.history:
+      for this_creature in this_day_history.creature_list:
+        diet_types.add(this_creature.diet_type)
+
+    if len(diet_types) < 2:
+      axes[0,0].plot(day_history, num_creatures_history, 'b', label="Creatures")
+      axes[0,0].plot(day_history, num_births_history, 'g', label="Births")
+      axes[0,0].plot(day_history, num_deaths_history, 'r', label="Deaths")
+    else:
+      diet_type_cts_hist = [dict.fromkeys(diet_types, 0) for x in self.history]
+      for this_day_history in self.history:
+        for this_creature in this_day_history.creature_list:
+          diet_type_cts_hist[this_day_history.day][this_creature.diet_type] += 1
+      for dt in sorted(diet_types):
+        dtch = np.array([x[dt] for x in diet_type_cts_hist])
+        axes[0,0].plot(dtch, label=dt)
+
+    _set_properties(axes[0,0], max(num_creatures_history)*1.05, 'Creatures')
     axes[0,0].legend()
 
 
@@ -244,24 +255,29 @@ class World:
       for this_creature in this_day_history.creature_list:
         mutations.add(this_creature.mutation)
 
-    # Get the number of creatures with each mutation throughout history
-    mutation_cts_history = [dict.fromkeys(mutations, 0) for x in self.history]
-    for this_day_history in self.history:
-      for this_creature in this_day_history.creature_list:
-        mutation_cts_history[this_day_history.day][this_creature.mutation] += 1
+    if len(mutations) < 2 and len(diet_types) >= 2:
+      axes[0,1].plot(day_history, num_creatures_history, 'b', label="Creatures")
+      axes[0,1].plot(day_history, num_births_history, 'g', label="Births")
+      axes[0,1].plot(day_history, num_deaths_history, 'r', label="Deaths")
+      axes[0,1].legend()
+    else:
+      # Get the number of creatures with each mutation throughout history
+      mut_cts_history = [dict.fromkeys(mutations, 0) for x in self.history]
+      for this_day_history in self.history:
+        for this_creature in this_day_history.creature_list:
+          mut_cts_history[this_day_history.day][this_creature.mutation] += 1
+      running_sum = np.array([0 for x in range(len(self.history))])
+      for mut in sorted(mutations):
+        mut_ct_history = np.array([x[mut] for x in mut_cts_history])
+        axes[0,1].fill_between(day_history,
+                               running_sum,
+                               running_sum + mut_ct_history,
+                               label=mut)
+        running_sum += mut_ct_history
+        handles, labels = axes[0,1].get_legend_handles_labels()
+        axes[0,1].legend(handles[::-1], labels[::-1], title='Mutation')
 
-    running_sum = np.array([0 for x in range(len(self.history))])
-    for mut in sorted(mutations):
-      mut_ct_history = np.array([x[mut] for x in mutation_cts_history])
-      axes[0,1].fill_between(day_history,
-                             running_sum,
-                             running_sum + mut_ct_history,
-                             label=mut)
-      running_sum += mut_ct_history
-    handles, labels = axes[0,1].get_legend_handles_labels()
-    axes[0,1].legend(handles[::-1], labels[::-1], title='Mutation')
-    # axes[0,1].legend(loc='center left')
-    _set_properties(axes[0,1], max(num_creatures_history), 'Creatures')
+    _set_properties(axes[0,1], max(num_creatures_history)*1.05, 'Creatures')
 
 
     today_creatures = num_creatures_history - num_births_history + num_deaths_history
@@ -280,10 +296,10 @@ class World:
         [(today_creatures[i]-num_deaths_history[i])/today_creatures[i] for i in days_with_creatures],
         label = 'barely made it')
     axes[0,2].fill_between(
-      [day_history[i-1] for i in days_with_creatures],
-      [0 for x in day_history[1:]],
-      [num_births_history[i]/today_creatures[i] for i in days_with_creatures],
-      label = 'reproduced')
+        [day_history[i-1] for i in days_with_creatures],
+        [0 for x in day_history[1:]],
+        [num_births_history[i]/today_creatures[i] for i in days_with_creatures],
+        label = 'reproduced')
     axes[0,2].fill_between(
         [day_history[i-1] for i in days_with_creatures],
         [(today_creatures[i]-num_deaths_history[i])/today_creatures[i] for i in days_with_creatures],
@@ -294,90 +310,138 @@ class World:
     axes[0,2].legend(handles[::-1], labels[::-1])
     _set_properties(axes[0,2], 1, 'Frac. Population')
 
-    axes[1,0].plot(num_births_history,
-                   num_creatures_history)
-    _set_properties(axes[1,0],
-                    max(num_creatures_history)*1.05,
-                    'Creatures', x_label='Births')
 
+    axes[1,0].plot(day_history,
+                   num_creatures_history,
+                   'b',
+                   linewidth=4,
+                   label='total creatures')
+    axes[1,0].fill_between(day_history,
+                           num_births_history,
+                           num_births_history*2,
+                           label = 'new parents')
+    axes[1,0].fill_between(day_history,
+                           num_births_history*2,
+                           num_creatures_history,
+                           label = 'barely made it')
+    axes[1,0].fill_between(day_history,
+                           [0 for x in day_history],
+                           num_births_history,
+                           label = 'newborns')
+    axes[1,0].fill_between(day_history,
+                           num_creatures_history,
+                           num_creatures_history + num_deaths_history,
+                           label = 'deaths')
+
+    handles, labels = axes[1,0].get_legend_handles_labels()
+    axes[1,0].legend(handles[::-1], labels[::-1])
+    todays_creatures = np.array(num_creatures_history)
+
+    _set_properties(axes[1,0],
+                    max(num_creatures_history + num_deaths_history)*1.05,
+                    'Creatures')
+
+
+    axes[1,1].plot(day_history, num_creatures_history, 'b', label="Creatures")
+    axes[1,1].plot(day_history, num_births_history, 'g', label="Births")
+    axes[1,1].plot(day_history, num_deaths_history, 'r', label="Deaths")
+    axes[1,1].plot(total_food_stored_history, 'b--', label="Total Food Stored")
+    axes[1,1].plot(food_on_field_history, 'g--', label="Food on Field")
+    _set_properties(axes[1,1],
+                    max(max(num_creatures_history),
+                        max(food_on_field_history),
+                        max(total_food_stored_history))*1.05,
+                    '')
+    axes[1,1].legend()
+
+
+    days_w_creats = np.array(
+        [i for i in np.where(num_creatures_history>0)[0] if i != self.days_passed])
+    axes[1,2].plot(
+        [day_history[i] for i in days_w_creats],
+        [num_births_history[i+1]/num_creatures_history[i] for i in days_w_creats],
+        'g', label="Births/Starting Creatures")
+    axes[1,2].plot(
+        [day_history[i] for i in days_w_creats],
+        [num_deaths_history[i+1]/num_creatures_history[i] for i in days_w_creats],
+        'r', label="Deaths/Starting Creatures")
+    max_y = 1
+
+    days_w_food = np.array(
+        [i for i in np.where(food_on_field_history>0)[0] if i !=0])
+    if len(days_w_food) > 1:
+
+      axes[1,2].plot(
+          [day_history[i] for i in days_w_food],
+          [total_food_stored_history[i]/food_on_field_history[i] for i in days_w_food],
+          'b--', label="Food stored/Food on field")
+      max_y = max(
+          max_y,
+          max([total_food_stored_history[i]/food_on_field_history[i] for i in days_w_food])
+      )
+    _set_properties(axes[1,2], 1.05*max_y, '')
+    axes[1,2].legend()
+
+
+    # axes[2,0].acorr(num_creatures_history[1:],
+    #                 usevlines=True,
+    #                 normed=True,
+    #                 lw=2)
+    # ax.grid(b=True, which='major')
+
+
+    axes[2,1].plot(
+        [day_history[i] for i in days_w_creats],
+        [total_food_stored_history[i]/num_creatures_history[i] for i in days_w_creats],
+        'g--')
+    _set_properties(
+        axes[2,1],
+        1.05*max([total_food_stored_history[i]/num_creatures_history[i] for i in days_w_creats]),
+        'Avg Food Stored/Creature'
+    )
+
+
+    labels, counts = np.unique([x.food_stored for x in self.history[-1].creature_list if x.age>0],
+                               return_counts=True)
+    axes[2,2].bar(labels, counts, align='center')
+    axes[2,2].set_xlabel('Food Stored')
+    axes[2,2].set_ylabel('Creatures (non-newborns)')
+    axes[2,2].set_title('Final Food Stored distribution ')
+
+
+    axes[3,0].plot(num_births_history,
+                   num_deaths_history)
+    _set_properties(axes[3,0],
+                    max(num_deaths_history)*1.05,
+                    'Deaths', x_label='Births')
 
     for i, txt in enumerate(day_history):
       if i%np.floor(len(day_history)/10) == 0:
-        axes[1,0].annotate(str(txt),
-                           (num_births_history[i], num_creatures_history[i]))
+        axes[3,0].annotate(str(txt),
+                           (num_births_history[i], num_deaths_history[i]))
 
-    axes[1,1].plot(food_on_field_history,
+
+    axes[3,1].plot(food_on_field_history,
                    total_food_stored_history)
-    _set_properties(axes[1,1],
+    _set_properties(axes[3,1],
                     max(total_food_stored_history)*1.05,
                     'Total Food Stored',
                     x_label='Food on the field')
 
     for i, txt in enumerate(day_history):
       if i%np.floor(len(day_history)/10) == 0:
-        axes[1,1].annotate(str(txt),
+        axes[3,1].annotate(str(txt),
                            (food_on_field_history[i],
                             total_food_stored_history[i]))
 
-    diet_types = set()
-    # Get the set of all mutations throughout history.
-    for this_day_history in self.history:
-      for this_creature in this_day_history.creature_list:
-        diet_types.add(this_creature.diet_type)
 
-    diet_type_cts_hist = [dict.fromkeys(diet_types, 0) for x in self.history]
-    for this_day_history in self.history:
-      for this_creature in this_day_history.creature_list:
-        diet_type_cts_hist[this_day_history.day][this_creature.diet_type] += 1
-    for dt in sorted(diet_types):
-      mut_ct_history = np.array([x[dt] for x in diet_type_cts_hist])
-      axes[1,2].plot(mut_ct_history, label=dt)
+    labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
+                               return_counts=True)
+    axes[3,2].bar(labels, counts, align='center')
+    axes[3,2].set_xlabel('Age')
+    axes[3,2].set_ylabel('Creatures')
+    axes[3,2].set_title('Final age distribution')
 
-    _set_properties(axes[1,2],
-                    max(num_creatures_history),
-                    'Num Creatures')
-    axes[1,2].legend()
-    # labels, counts = np.unique([x.age for x in self.history[-1].creature_list],
-    #                            return_counts=True)
-    # axes[1,2].bar(labels, counts, align='center')
-    # axes[1,2].set_xlabel('Age')
-    # axes[1,2].set_ylabel('Creatures')
-    # axes[1,2].set_title('Final age distribution')
-
-
-    axes[2,0].plot(day_history,
-                   num_creatures_history,
-                   'k',
-                   linewidth=4,
-                   label = 'total creatures')
-    axes[2,0].fill_between(day_history,
-                           [0 for x in day_history],
-                           num_births_history,
-                           label = 'newborns')
-                           # color='g')
-    axes[2,0].fill_between(day_history,
-                           num_births_history,
-                           num_births_history*2,
-                           label = 'new parents')
-                           # color='b')
-    axes[2,0].fill_between(day_history,
-                           num_births_history*2,
-                           num_creatures_history,
-                           label = 'lucky to be alive')
-                           # color='y')
-    axes[2,0].fill_between(day_history,
-                           num_creatures_history,
-                           num_creatures_history + num_deaths_history,
-                           label = 'deaths')
-                           # color='r')
-
-    handles, labels = axes[2,0].get_legend_handles_labels()
-    axes[2,0].legend(handles[::-1], labels[::-1])
-    todays_creatures = np.array(num_creatures_history)
-    # axes[0,1].legend(loc='center left')
-    _set_properties(axes[2,0],
-                    max(num_creatures_history + num_deaths_history)*1.05,
-                    'Creatures')
 
     fig.tight_layout()
 

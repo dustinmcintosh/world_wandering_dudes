@@ -42,18 +42,18 @@ def main():
   args = parser.parse_args()
   if args.world_pkl:
     # Reuse old world.
-    print("Reusing world ", args.world_pkl)
+    print("Reusing world", args.world_pkl)
     with open(TMP_DIR + args.world_pkl, "rb") as f:
       my_world=pickle.load(f)
   else:
-    # Create a small world, with lots of food and 1 creature
+    # Create a small world, with lots of food and 10% of sustainable creatures.
     print("Creating World...")
     field_size = 50
     food_density = 0.07
     my_world = World(field_size,
                      food_density,
-                     int(field_size**2*food_density/4),
-                     reproduction_mutation_chance=0.001)
+                     int(field_size**2*food_density/10),
+                     reproduction_mutation_chance=0.01)
     # Overwrite location to start the creature near the middle of the map.
     my_world.creatures[0].location = [20, 20]
 
