@@ -9,12 +9,16 @@ class Creature:
     NORMAL: takes 1 step, eats 1 food (+1 more to reproduce).
     SPEEDY: takes 2 steps, eats 1 food (+1 more to reproduce).
     EFFICIENT: takes 1 step, eats 0.5 food (0.5 more to reproduce).
+  They have a diet type:
+    VEGETARIAN: Eats food that grows on the field.
+    CARNIVORE: Eats creatures with diet_type VEGETARIAN.
 
   Arguments:
     location: list of length 2; Location of the creature.
     mutation: string; See supported mutations above.
     reproduction_mutation_chance: float; [0, 1] chance the creature will mutate
       on reproducing.
+    diet_type: string; See supported diet types above.
 
   Other attributes:
     food_stored: float; Amount of food the creature has currently.
@@ -39,6 +43,9 @@ class Creature:
     """Move along the field (see Field.py) and store any food you find.
 
     Most creatures move 1 space in random dir., fast creatures move 2 spaces.
+
+    Arguments:
+      world: world; Other creatures and a field to interact with.
     """
     # udlr = up, down, left, right - choices for movement.
     udlr = [[0,1], [0,-1], [-1,0], [1,0]]
@@ -80,7 +87,7 @@ class Creature:
       # Grab all the food from the field at this new location and store it.
       if self.diet_type == "VEGETARIAN":
         self.food_stored += world.field.remove_food(self.location)
-      else:
+      elif self.diet_type == "CARNIVORE":
         for prey in [x for x in world.creatures if x.diet_type == "VEGETARIAN"]:
           if self.location == prey.location:
             prey.is_alive = False
