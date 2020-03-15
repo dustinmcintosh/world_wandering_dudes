@@ -20,12 +20,12 @@ def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
   frames = []
   imgs = glob.glob(TMP_DIR + file_pattern)
 
-  if len(frames) == 0:
-    return
-
   # Open the images.
   for i in sorted(imgs):
       frames.append(Image.open(i))
+
+  if len(frames) == 0:
+    return
 
   # Save into looping gif file.
   frames[0].save(TMP_DIR + gif_name + '.gif',
@@ -48,17 +48,22 @@ def main():
   else:
     # Create a small world, with lots of food and 1 creature
     print("Creating World...")
-    my_world = World(50, 0.07, 1, reproduction_mutation_chance=0.001)
+    field_size = 50
+    food_density = 0.07
+    my_world = World(field_size,
+                     food_density,
+                     int(field_size**2*food_density/4),
+                     reproduction_mutation_chance=0.001)
     # Overwrite location to start the creature near the middle of the map.
     my_world.creatures[0].location = [20, 20]
 
   for i in range(40):
     my_world.pass_day(40,
-                      plot_steps=(True if my_world.days_passed < 5 else False))
-    if my_world.days_passed < 21:
-      my_world.show_me(save_plot=True)
+                      plot_steps=(True if my_world.days_passed < 7 else False))
+    my_world.show_me(save_plot=True)
     print("days_passed: ", my_world.days_passed,
           "; creatures: ", len(my_world.creatures))
+
   my_world.plot_history(save_plot=True)
   save_gif("*_t_*.png", "the_first_days", delete_imgs=True, frame_duration=100)
   save_gif("world_2*.png", "each_day", delete_imgs=True, frame_duration=800)
