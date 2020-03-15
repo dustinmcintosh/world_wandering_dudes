@@ -13,11 +13,26 @@ This repository contains a framework for examining population dynamics and natur
     b. If, after eating, the creature has enough food, it will reproduce, creating another creature at it’s same location.  This new creature may mutate, changing its properties.
 
     c. The food throughout the world may spoil, and the field will resprout food.
-    
+
+## Instructions
+Clone the package as usual.
+```bash
+git clone https://github.com/dustinmcintosh/world_wandering_dudes
+
+cd world_wandering_dudes
+```
+Update the directory in SET_ME.py to your desired destination for figures.
+
+Run the sample code:
+```bash
+python scripts/basic_simulation.py
+```
+
+
 ## Example
-The simulation results are random and strongly dependent on the properties of the world:
-![](the_first_days.gif)  
-Looking over the course of many days:                                                  
-![](each_day.gif)  
-We can also look at stats on the creatures/field throughout the world's history:  
-![](example_history3.png)  
+The simulation results are random and strongly dependent on the properties of the world:   
+![](figures/the_first_days.gif)   
+Looking over the course of many days:   
+![](figures/each_day.gif)   
+We can also look at stats on the creatures/field throughout the world's history:   
+![](figures/example_history3.png)
