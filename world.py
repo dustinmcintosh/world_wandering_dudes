@@ -108,7 +108,7 @@ class World:
       if dude.diet_type == "VEGETARIAN" and dude.is_alive:
         vegetarian_loc[dude.location[0], dude.location[1]] = 1
 
-    ax.spy(vegetarian_loc, markersize=2*increment_size, c="b")
+    ax.spy(vegetarian_loc, markersize=2*increment_size, c="m")
 
     dead_vegetarian_loc = self.field.food_grid*0
     for dude in self.creatures:

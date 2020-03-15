@@ -58,7 +58,7 @@ def main():
     my_world.create_creatures(int(field_size**2*food_density/4),
                               diet_type="CARNIVORE")
 
-  for i in range(1):
+  for i in range(40):
     my_world.pass_day(40,
                       plot_steps=(True if i < 15 else False))
     my_world.show_me(save_plot=True)
