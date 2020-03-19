@@ -53,7 +53,8 @@ def main():
     my_world = World(field_size,
                      food_density,
                      int(field_size**2*food_density/10),
-                     reproduction_mutation_chance=0.001)
+                     creature_reproduction_mutation_chance=0.001,
+                     creatures_randomly_teleport=True)
     # Overwrite location to start the creature near the middle of the map.
     my_world.creatures[0].location = [20, 20]
 

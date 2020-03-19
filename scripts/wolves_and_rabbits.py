@@ -48,15 +48,17 @@ def main():
       my_world=pickle.load(f)
   else:
     # Create a small world, with lots of food and 1 creature
-    field_size = 75
+    field_size = 225
     food_density = 0.07
     print("Creating World...")
     my_world = World(field_size,
                      food_density,
                      int(field_size**2*food_density),
-                     reproduction_mutation_chance=0)
+                     creature_reproduction_mutation_chance=0,
+                     creatures_randomly_teleport=False)
     my_world.create_creatures(int(field_size**2*food_density/4),
-                              diet_type="CARNIVORE")
+                              creature_diet_type="CARNIVORE",
+                              creatures_randomly_teleport=False)
 
   for i in range(40):
     my_world.pass_day(40,

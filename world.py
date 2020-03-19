@@ -32,30 +32,30 @@ class World:
       randomly by food each day
     num_creatures: int; Number of creatures to initally populate on the field
       with random location.
-    mutation: string; Mutation type of the initial creatures.
-    reproduction_mutation_chance: float; Probability that the creatures will
+    creature_mutation: string; Mutation type of the initial creatures.
+    creature_reproduction_mutation_chance: float; Probability that the creatures will
       mutate upon reproduction.
-    babies_teleport: Do the babies of the creatures teleport to a random
-      location on the field upon birth?
+    creatures_randomly_teleport: Do the creatures teleport to a random location
+      on the field every day?
     food_spoils: bool; Does the food in the world, on the field and stored by
       creatures spoil (disappear) at the end of the day?
     """
   def __init__(self,
                field_size,
                food_fill_factor,
-               num_creatures,
-               mutation="NORMAL",
-               reproduction_mutation_chance=0,
-               babies_teleport=False,
+               num_initial_creatures,
+               creature_mutation="NORMAL",
+               creature_reproduction_mutation_chance=0,
+               creatures_randomly_teleport=False,
                food_spoils=False):
     self.field = Field(field_size)
     self.field.sprout(food_fill_factor)
     self.creatures = []
     self.create_creatures(
-        num_creatures,
-        mutation=mutation,
-        reproduction_mutation_chance=reproduction_mutation_chance,
-        babies_teleport=babies_teleport
+        num_initial_creatures,
+        creature_mutation=creature_mutation,
+        creature_reproduction_mutation_chance=creature_reproduction_mutation_chance,
+        creatures_randomly_teleport=creatures_randomly_teleport
     )
     self.days_passed = 0
     self.history = []
@@ -64,24 +64,22 @@ class World:
 
   def create_creatures(self,
                        num_creatures,
-                       mutation="NORMAL",
-                       reproduction_mutation_chance=0,
-                       babies_teleport=False,
-                       diet_type="VEGETARIAN"):
-    """Places num_creatures creatures randomly around the map.
+                       creature_mutation="NORMAL",
+                       creature_reproduction_mutation_chance=0,
+                       creatures_randomly_teleport=False,
+                       creature_diet_type="VEGETARIAN"):
+    """Places num_creatures creatures randomly around the world.
 
     Arguments:
-      num_creatures: int; Number of creatures to add to map.
-      mutation: string; Type of mutation for the creatures (see Creature.py).
-      reproduction_mutation_chance
+      num_creatures: int; Number of creatures to add to world.
+      creature_mutation: string; Type of mutation for the creatures (see
+        Creature.py).
+      creature_reproduction_mutation_chance: float; probability the creature
+        will mutate upon reproduction.
       mutation: string; Mutation of the creature.
-      reproduction_mutation_chance: Chance to mutate upor reproduction.
-      babies_teleport: Do the babies of the creatures teleport to a random
-        location on the field upon birth?
-      diet_type: "VEGETARIAN" or "CARNIVORE"
-
-    Returns:
-      [Creature]; A list of creatures.
+      creatures_randomly_teleport:Do the creatures teleport to a random location
+        on the field every day?
+      creature_diet_type: "VEGETARIAN" or "CARNIVORE"
     """
     all_my_creatures  = []
     for randy in np.random.choice(self.field.field_size**2,
@@ -90,10 +88,10 @@ class World:
       self.creatures.append(
           Creature([int(np.floor(randy/self.field.field_size)),
                        randy%self.field.field_size],
-                   mutation=mutation,
-                   reproduction_mutation_chance=reproduction_mutation_chance,
-                   diet_type=diet_type,
-                   babies_teleport=babies_teleport
+                   mutation=creature_mutation,
+                   reproduction_mutation_chance=creature_reproduction_mutation_chance,
+                   diet_type=creature_diet_type,
+                   randomly_teleports=creatures_randomly_teleport
           )
       )
 
@@ -154,7 +152,7 @@ class World:
     Arguments:
       save_plot: bool; Whether or not to save the plot to disc.
       steps_in_day: int; how many times the creatures should move today
-      plot_steps: bool; should we save a pngs for every step today?
+      plot_steps: bool; should we save a png for every step today?
     """
     if self.days_passed == 0:
       # Record starting state (0 births or deaths).
@@ -170,17 +168,16 @@ class World:
         self.show_me(save_plot=True, time_of_day=t)
 
     # Eat and reproduce, if you can, my dudes!
-    dead_creature_indices = []
     babies = []
     for this_creature in self.creatures:
       babies += this_creature.eat_die_reproduce(self)
 
+    # Welcome little dudes!
+    self.creatures += babies
+
     # Goodbye, loyal dudes! :(
     num_deaths = len([x for x in self.creatures if not x.is_alive])
     self.creatures = [x for x in self.creatures if x.is_alive]
-
-    # Welcome, little dudes! :)
-    self.creatures += babies
 
     # Spoil food if we need to.
     if self.food_spoils:
@@ -190,6 +187,9 @@ class World:
 
     # The land is fertile! :)
     self.field.sprout(self.food_fill_factor)
+
+    # Everybody who can teleport, does.
+    [creat.maybe_teleport(self) for creat in self.creatures]
 
     # Long day...
     self.days_passed += 1
@@ -305,7 +305,7 @@ class World:
         label = 'barely made it')
     axes[0,2].fill_between(
         [day_history[i-1] for i in days_with_creatures],
-        [0 for x in day_history[1:]],
+        [0 for x in days_with_creatures],
         [num_births_history[i]/today_creatures[i] for i in days_with_creatures],
         label = 'reproduced')
     axes[0,2].fill_between(

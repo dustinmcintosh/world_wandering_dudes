@@ -31,14 +31,14 @@ class Creature:
                mutation="NORMAL",
                reproduction_mutation_chance=0,
                diet_type="VEGETARIAN",
-               babies_teleport=False):
+               randomly_teleports=False):
     self.location = location
     self.food_stored = 0
     self.mutation = mutation
     self.reproduction_mutation_chance = reproduction_mutation_chance
     self.age = 0
     self.diet_type = diet_type
-    self.babies_teleport = babies_teleport
+    self.randomly_teleports = randomly_teleports
     self.is_alive = True
 
   def move_and_grab(self, world):
@@ -139,13 +139,12 @@ class Creature:
     self.food_stored -= food_required
     return [
         Creature(
-          location=(self.location.copy() if not self.babies_teleport else
-              np.random.choice(range(world.field.field_size), 2)),
+          location=self.location.copy(),
           mutation=self._get_mutation(self.reproduction_mutation_chance),
           reproduction_mutation_chance=self.reproduction_mutation_chance,
           diet_type=self.diet_type,
-          babies_teleport=self.babies_teleport
-      )
+          randomly_teleports=self.randomly_teleports
+        )
     ]
 
   def _get_mutation(self, mutation_chance):
@@ -159,3 +158,14 @@ class Creature:
     if np.random.rand() < mutation_chance:
       return np.random.choice(['NORMAL', 'EFFICIENT', 'SPEEDY'])
     return self.mutation
+
+  def maybe_teleport(self, world):
+    """If the creature teleports, teleport randomly to somewhere in the world.
+
+    Arguments:
+      world: world; The world to teleport to.
+    """
+    if not self.randomly_teleports:
+      return
+
+    self.location = list(np.random.choice(range(world.field.field_size), 2))
