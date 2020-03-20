@@ -47,15 +47,18 @@ class World:
                creature_mutation="NORMAL",
                creature_reproduction_mutation_chance=0,
                creatures_randomly_teleport=False,
-               food_spoils=False):
+               food_spoils=False,
+               creature_meat_value=2):
     self.field = Field(field_size)
     self.field.sprout(food_fill_factor)
     self.creatures = []
+    self.creatures_by_loc = [[[] for x in range(field_size)] for y in range(field_size)]
     self.create_creatures(
         num_initial_creatures,
         creature_mutation=creature_mutation,
         creature_reproduction_mutation_chance=creature_reproduction_mutation_chance,
-        creatures_randomly_teleport=creatures_randomly_teleport
+        creatures_randomly_teleport=creatures_randomly_teleport,
+        creature_meat_value=creature_meat_value
     )
     self.days_passed = 0
     self.history = []
@@ -67,7 +70,8 @@ class World:
                        creature_mutation="NORMAL",
                        creature_reproduction_mutation_chance=0,
                        creatures_randomly_teleport=False,
-                       creature_diet_type="VEGETARIAN"):
+                       creature_diet_type="VEGETARIAN",
+                       creature_meat_value=2):
     """Places num_creatures creatures randomly around the world.
 
     Arguments:
@@ -85,15 +89,26 @@ class World:
     for randy in np.random.choice(self.field.field_size**2,
                                   num_creatures,
                                   replace=False):
-      self.creatures.append(
-          Creature([int(np.floor(randy/self.field.field_size)),
-                       randy%self.field.field_size],
-                   mutation=creature_mutation,
-                   reproduction_mutation_chance=creature_reproduction_mutation_chance,
-                   diet_type=creature_diet_type,
-                   randomly_teleports=creatures_randomly_teleport
-          )
-      )
+      x_loc = int(np.floor(randy/self.field.field_size))
+      y_loc = randy%self.field.field_size
+      self.add_creature(
+          Creature(
+              location=[x_loc, y_loc],
+              mutation=creature_mutation,
+              reproduction_mutation_chance=creature_reproduction_mutation_chance,
+              diet_type=creature_diet_type,
+              randomly_teleports=creatures_randomly_teleport,
+              meat_value=creature_meat_value
+      ))
+
+  def add_creature(self, creature):
+    self.creatures.append(creature)
+    self.creatures_by_loc[creature.location[0]][creature.location[1]].append(creature)
+
+  def remove_creature(self, creature):
+    self.creatures = [x for x in self.creatures if x != creature]
+    self.creatures_by_loc[creature.location[0]][creature.location[1]] = [
+        x for x in self.creatures_by_loc[creature.location[0]][creature.location[1]] if x != creature]
 
   def show_me(self, time_of_day=None, save_plot=False):
     """Plots the field, food, and creatures.
@@ -173,11 +188,12 @@ class World:
       babies += this_creature.eat_die_reproduce(self)
 
     # Welcome little dudes!
-    self.creatures += babies
+    [self.add_creature(baby) for baby in babies]
 
     # Goodbye, loyal dudes! :(
-    num_deaths = len([x for x in self.creatures if not x.is_alive])
-    self.creatures = [x for x in self.creatures if x.is_alive]
+    deaths = [x for x in self.creatures if not x.is_alive]
+    num_deaths = len(deaths)
+    [self.remove_creature(death) for death in deaths]
 
     # Spoil food if we need to.
     if self.food_spoils:
@@ -301,16 +317,19 @@ class World:
     axes[0,2].fill_between(
         [day_history[i-1] for i in days_with_creatures],
         [num_births_history[i]/today_creatures[i] for i in days_with_creatures],
-        [(today_creatures[i]-num_deaths_history[i])/today_creatures[i] for i in days_with_creatures],
+        [(today_creatures[i]-num_deaths_history[i])/today_creatures[i]
+            for i in days_with_creatures],
         label = 'barely made it')
     axes[0,2].fill_between(
         [day_history[i-1] for i in days_with_creatures],
         [0 for x in days_with_creatures],
-        [num_births_history[i]/today_creatures[i] for i in days_with_creatures],
+        [num_births_history[i]/today_creatures[i]
+            for i in days_with_creatures],
         label = 'reproduced')
     axes[0,2].fill_between(
         [day_history[i-1] for i in days_with_creatures],
-        [(today_creatures[i]-num_deaths_history[i])/today_creatures[i] for i in days_with_creatures],
+        [(today_creatures[i]-num_deaths_history[i])/today_creatures[i]
+            for i in days_with_creatures],
         [1 for i in days_with_creatures],
         label = 'died')
 
@@ -424,7 +443,7 @@ class World:
                     'Deaths', x_label='Births')
 
     for i, txt in enumerate(day_history):
-      if i%np.floor(len(day_history)/10) == 0:
+      if self.days_passed < 10 or i%np.floor(len(day_history)/10) == 0:
         axes[3,0].annotate(str(txt),
                            (num_births_history[i], num_deaths_history[i]))
 
@@ -437,7 +456,8 @@ class World:
                     x_label='Food on the field')
 
     for i, txt in enumerate(day_history):
-      if i%np.floor(len(day_history)/10) == 0:
+
+      if self.days_passed < 10 or i%np.floor(len(day_history)/10) == 0:
         axes[3,1].annotate(str(txt),
                            (food_on_field_history[i],
                             total_food_stored_history[i]))
