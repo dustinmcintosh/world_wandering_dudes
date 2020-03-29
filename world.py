@@ -72,7 +72,7 @@ class World:
                        creature_mutation="NORMAL",
                        creature_reproduction_mutation_prob=0,
                        creatures_randomly_teleport=False,
-                       creature_diet_type="VEGETARIAN",
+                       creature_diet_type="HERBIVORE",
                        creature_meat_value=2):
     """Places num_creatures creatures randomly around the world.
 
@@ -85,7 +85,7 @@ class World:
       mutation: string; Mutation of the creature.
       creatures_randomly_teleport: bool; Do the creatures teleport to a random
         location on the field every day?
-      creature_diet_type: "VEGETARIAN" or "CARNIVORE"
+      creature_diet_type: "HERBIVORE" or "CARNIVORE"
     """
     all_my_creatures  = []
     for randy in np.random.choice(self.field.field_size**2,
@@ -110,7 +110,9 @@ class World:
       creature: int; Creature to add.
     """
     self.creatures.append(creature)
-    self.creatures_by_loc[creature.location[0]][creature.location[1]].append(creature)
+    self.creatures_by_loc[creature.location[0]][creature.location[1]].append(
+        creature
+    )
 
   def remove_creature(self, creature):
     """Removes the creature from the world.
@@ -142,19 +144,17 @@ class World:
         markersize=6*increment_size, c="palegoldenrod")
     ax.spy(self.field.food_grid, markersize=1*increment_size, c="g")
 
-    vegetarian_loc = self.field.food_grid*0
+    herbivore_loc = self.field.food_grid*0
+    dead_herbivore_loc = self.field.food_grid*0
     for dude in self.creatures:
-      if dude.diet_type == "VEGETARIAN" and dude.is_alive:
-        vegetarian_loc[dude.location[0], dude.location[1]] = 1
+      if dude.diet_type == "HERBIVORE":
+        if dude.is_alive:
+          herbivore_loc[dude.location[0], dude.location[1]] = 1
+        else:
+          dead_herbivore_loc[dude.location[0], dude.location[1]] = 1
 
-    ax.spy(vegetarian_loc, markersize=2*increment_size, c="m")
-
-    dead_vegetarian_loc = self.field.food_grid*0
-    for dude in self.creatures:
-      if dude.diet_type == "VEGETARIAN" and not dude.is_alive:
-        dead_vegetarian_loc[dude.location[0], dude.location[1]] = 1
-
-    ax.spy(dead_vegetarian_loc, markersize=2*increment_size, c="k")
+    ax.spy(herbivore_loc, markersize=2*increment_size, c="m")
+    ax.spy(dead_herbivore_loc, markersize=2*increment_size, c="k")
 
     carnivore_loc = self.field.food_grid*0
     for dude in [x for x in self.creatures if x.diet_type == "CARNIVORE"]:
@@ -263,7 +263,7 @@ class World:
         [x.total_food_stored for x in self.history])
     food_on_field_history = np.array([x.food_on_field for x in self.history])
 
-    def _set_properties(ax, upper_y, y_label, x_label=None):
+    def _set_properties(ax, upper_y, y_label, x_label="Time (days)"):
       ax.grid(b=True, which='major')
       if type(x_label) == str:
         ax.set_xlabel(x_label)
@@ -426,7 +426,8 @@ class World:
         'g', label="Births/Starting Creatures")
     axes[1,2].plot(
         [day_history[i] for i in days_w_creats],
-        [num_deaths_history[i+1]/num_creatures_history[i] for i in days_w_creats],
+        [num_deaths_history[i+1]/num_creatures_history[i]
+            for i in days_w_creats],
         'r', label="Deaths/Starting Creatures")
     max_y = 1
 
@@ -436,11 +437,13 @@ class World:
 
       axes[1,2].plot(
           [day_history[i] for i in days_w_food],
-          [total_food_stored_history[i]/food_on_field_history[i] for i in days_w_food],
+          [total_food_stored_history[i]/food_on_field_history[i]
+              for i in days_w_food],
           'b--', label="Food stored/Food on field")
       max_y = max(
           max_y,
-          max([total_food_stored_history[i]/food_on_field_history[i] for i in days_w_food])
+          max([total_food_stored_history[i]/food_on_field_history[i]
+              for i in days_w_food])
       )
     _set_properties(axes[1,2], 1.05*max_y, '')
     axes[1,2].legend()
@@ -457,11 +460,13 @@ class World:
     # Plot avg food stored per creature.
     axes[2,1].plot(
         [day_history[i] for i in days_w_creats],
-        [total_food_stored_history[i]/num_creatures_history[i] for i in days_w_creats],
+        [total_food_stored_history[i]/num_creatures_history[i]
+            for i in days_w_creats],
         'g--')
     _set_properties(
         axes[2,1],
-        1.05*max([total_food_stored_history[i]/num_creatures_history[i] for i in days_w_creats]),
+        1.05*max([total_food_stored_history[i]/num_creatures_history[i]
+            for i in days_w_creats]),
         'Avg Food Stored/Creature'
     )
 

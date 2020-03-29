@@ -10,8 +10,8 @@ class Creature:
     SPEEDY: takes 2 steps, eats 1 food (+1 more to reproduce).
     EFFICIENT: takes 1 step, eats 0.5 food (0.5 more to reproduce).
   They have a diet type:
-    VEGETARIAN: Eats food that grows on the field.
-    CARNIVORE: Eats creatures with diet_type VEGETARIAN.
+    HERBIVORE: Eats food that grows on the field.
+    CARNIVORE: Eats creatures with diet_type HERBIVORE.
 
   Arguments:
     location: list of length 2; Location of the creature.
@@ -32,7 +32,7 @@ class Creature:
                location,
                mutation="NORMAL",
                reproduction_mutation_chance=0,
-               diet_type="VEGETARIAN",
+               diet_type="HERBIVORE",
                randomly_teleports=False,
                meat_value=2):
     self.location = location
@@ -55,7 +55,7 @@ class Creature:
     """
     # udlr = up, down, left, right - choices for movement.
     udlr = [[0,1], [0,-1], [-1,0], [1,0]]
-    which_dir = udlr[np.random.choice(4)]
+    direction = udlr[np.random.choice(4)]
 
     # Dead creatures can't move (or grab). :(
     if not self.is_alive:
@@ -76,32 +76,32 @@ class Creature:
       if world.field.has_boundaries:
         # Move or just run into the wall.
         self.location[0] = max(
-          min(self.location[0] + which_dir[0], world.field.field_size-1), 0
+          min(self.location[0] + direction[0], world.field.field_size-1), 0
         )
         self.location[1] = max(
-          min(self.location[1] + which_dir[1], world.field.field_size-1), 0
+          min(self.location[1] + direction[1], world.field.field_size-1), 0
         )
       else:
         # Move.
-        self.location[0] = self.location[0] + which_dir[0]
+        self.location[0] = self.location[0] + direction[0]
         if self.location[0] < 0:
           # Appear on the other side of the field.
           self.location[0] = world.field.field_size-1
         if self.location[0] > world.field.field_size-1:
           self.location[0] = 0
-        self.location[1] = self.location[1] + which_dir[1]
+        self.location[1] = self.location[1] + direction[1]
         if self.location[1] < 0:
           self.location[1] = world.field.field_size-1
         if self.location[1] > world.field.field_size-1:
           self.location[1] = 0
 
       # Grab all the food from the field at this new location and store it.
-      if self.diet_type == "VEGETARIAN":
+      if self.diet_type == "HERBIVORE":
         self.food_stored += world.field.remove_food(self.location)
       elif self.diet_type == "CARNIVORE":
         for prey in [
             x for x in world.creatures_by_loc[self.location[0]][self.location[1]]
-            if x.diet_type == "VEGETARIAN" and x.is_alive]:
+            if x.diet_type == "HERBIVORE" and x.is_alive]:
           if self.location == prey.location:
             prey.is_alive = False
             self.food_stored += prey.meat_value
