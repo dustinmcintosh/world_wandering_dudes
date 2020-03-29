@@ -467,8 +467,9 @@ class World:
 
 
     # Plot the final distribution of amount of food stored by creatures.
-    labels, counts = np.unique([x.food_stored for x in self.history[-1].creature_list if x.age>0],
-                               n_counts=True)
+    labels, counts = np.unique(
+        [x.food_stored for x in self.history[-1].creature_list if x.age>0],
+        return_counts=True)
     axes[2,2].bar(labels, counts, align='center')
     axes[2,2].set_xlabel('Food Stored')
     axes[2,2].set_ylabel('Creatures (non-newborns)')
