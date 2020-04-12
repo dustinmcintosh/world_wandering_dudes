@@ -12,6 +12,7 @@ class Creature:
   They have a diet type:
     HERBIVORE: Eats food that grows on the field.
     CARNIVORE: Eats creatures with diet_type HERBIVORE.
+    SUPER_CARNIVORE: Eats creatures with diet_type CARNIVORE.
 
   Arguments:
     location: list of length 2; Location of the creature.
@@ -61,7 +62,7 @@ class Creature:
     if not self.is_alive:
       return
 
-    # Creatures move 1.
+    # Normal creatures move 1.
     steps_to_take = 1
     # Speedy creatures get a boost.
     if self.mutation == "SPEEDY":
@@ -84,16 +85,19 @@ class Creature:
       else:
         # Move.
         self.location[0] = self.location[0] + direction[0]
+
+        # If you ran off the field in x-axis, appear on the other side.
         if self.location[0] < 0:
-          # Appear on the other side of the field.
-          self.location[0] = world.field.field_size-1
+          self.location[0] = world.field.field_size + self.location[0]
         if self.location[0] > world.field.field_size-1:
-          self.location[0] = 0
+          self.location[0] = self.location[0] - world.field.field_size
         self.location[1] = self.location[1] + direction[1]
+
+        # If you ran off the field in y-axis, appear on the other side.
         if self.location[1] < 0:
-          self.location[1] = world.field.field_size-1
-        if self.location[1] > world.field.field_size-1:
-          self.location[1] = 0
+          self.location[1] = world.field.field_size + self.location[1]
+        if self.location[1] > world.field.field_size - 1:
+          self.location[1] = self.location[1] - world.field.field_size
 
       # Grab all the food from the field at this new location and store it.
       if self.diet_type == "HERBIVORE":
@@ -102,6 +106,13 @@ class Creature:
         for prey in [
             x for x in world.creatures_by_loc[self.location[0]][self.location[1]]
             if x.diet_type == "HERBIVORE" and x.is_alive]:
+          if self.location == prey.location:
+            prey.is_alive = False
+            self.food_stored += prey.meat_value
+      elif self.diet_type == "SUPER_CARNIVORE":
+        for prey in [
+            x for x in world.creatures_by_loc[self.location[0]][self.location[1]]
+            if x.diet_type == "CARNIVORE" and x.is_alive]:
           if self.location == prey.location:
             prey.is_alive = False
             self.food_stored += prey.meat_value

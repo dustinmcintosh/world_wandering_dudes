@@ -85,7 +85,7 @@ class World:
       mutation: string; Mutation of the creature.
       creatures_randomly_teleport: bool; Do the creatures teleport to a random
         location on the field every day?
-      creature_diet_type: "HERBIVORE" or "CARNIVORE"
+      creature_diet_type: "HERBIVORE" or "CARNIVORE" or "SUPER_CARNIVORE"
     """
     all_my_creatures  = []
     for randy in np.random.choice(self.field.field_size**2,
@@ -157,15 +157,27 @@ class World:
     ax.spy(dead_herbivore_loc, markersize=2*increment_size, c="k")
 
     carnivore_loc = self.field.food_grid*0
+    dead_carnivore_loc = self.field.food_grid*0
     for dude in [x for x in self.creatures if x.diet_type == "CARNIVORE"]:
-      carnivore_loc[dude.location[0], dude.location[1]] = 1
+      if dude.is_alive:
+        carnivore_loc[dude.location[0], dude.location[1]] = 1
+      else:
+        dead_carnivore_loc[dude.location[0], dude.location[1]] = 1
 
-    ax.spy(carnivore_loc, markersize=3*increment_size, c="r")
+    ax.spy(carnivore_loc, markersize=4*increment_size, c="r")
+    ax.spy(dead_carnivore_loc, markersize=4*increment_size, c="k")
+
+    super_carnivore_loc = self.field.food_grid*0
+    for dude in [x for x in self.creatures if x.diet_type == "SUPER_CARNIVORE"]:
+      super_carnivore_loc[dude.location[0], dude.location[1]] = 1
+
+    ax.spy(super_carnivore_loc, markersize=6*increment_size, c="royalblue")
 
     my_title = 'Days passed: ' + str(self.days_passed)
     if type(time_of_day) == int:
       my_title += "; time: " + str(time_of_day)
     ax.set_title(my_title)
+    ax.axis('off')
 
     if save_plot:
       file_name = TMP_DIR + datetime.now().strftime("world_%Y%m%d%H%M%S%f")
@@ -223,7 +235,7 @@ class World:
     self.field.sprout(self.food_fill_factor)
 
     # Everybody who can teleport, does.
-    [creat.maybe_teleport(self) for creat in self.creatures]
+    [creature.maybe_teleport(self) for creature in self.creatures]
 
     # Long day...
     self.days_passed += 1
