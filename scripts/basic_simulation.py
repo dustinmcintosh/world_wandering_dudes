@@ -1,40 +1,14 @@
+import argparse
+import os
+import pickle
+
+from util import save_gif
+
 import sys
 sys.path.insert(1, sys.path[0]+'/..')
 
 from world import World, DailyHistory
 from SET_ME import TMP_DIR
-
-import argparse
-import glob
-import os
-import pickle
-from PIL import Image
-
-def save_gif(file_pattern, gif_name, delete_imgs=False, frame_duration=100):
-  """Using Pillow image library to change alphabetical png files into gifs.
-
-  Arguments:
-    file_pattern: string; File pattern of the images to use.
-    gif_name: string; Filename to save ('.gif' will be appended automatically).
-  """
-  frames = []
-  imgs = glob.glob(TMP_DIR + file_pattern)
-
-  # Open the images.
-  for i in sorted(imgs):
-      frames.append(Image.open(i))
-
-  if len(frames) == 0:
-    return
-
-  # Save into looping gif file.
-  frames[0].save(TMP_DIR + gif_name + '.gif',
-                 format='GIF',
-                 append_images=frames[1:],
-                 save_all=True,
-                 duration=frame_duration, loop=0)
-  if delete_imgs:
-    [os.remove(file) for file in imgs]
 
 def main():
   parser = argparse.ArgumentParser()
@@ -46,14 +20,14 @@ def main():
     with open(TMP_DIR + args.world_pkl, "rb") as f:
       my_world=pickle.load(f)
   else:
-    # Create a small world, with lots of food and 10% of sustainable creatures.
+    # Create a small world, with lots of food and 1 creature.
     print("Creating World...")
     field_size = 50
     food_density = 0.07
     my_world = World(field_size,
                      food_density,
-                     int(field_size**2*food_density/10),
-                     reproduction_mutation_chance=0.001)
+                     1,
+                     creature_reproduction_mutation_prob=0.05)
     # Overwrite location to start the creature near the middle of the map.
     my_world.creatures[0].location = [20, 20]
 

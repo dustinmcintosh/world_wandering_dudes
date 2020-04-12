@@ -1,11 +1,11 @@
-import SET_ME
-
 import numpy as np
 from datetime import datetime
 import pytz
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
+
+import SET_ME
 
 class Field:
   """Create a field object which is a square 2D lattice with food on it.
