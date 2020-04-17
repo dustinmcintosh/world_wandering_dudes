@@ -37,8 +37,10 @@ class World:
       willmutate upon reproduction.
     creatures_randomly_teleport: Do the creatures teleport to a random location
       on the field every day?
+    field_has_boundaries: bool; Does the world's field have boundaries?
     food_spoils: bool; Does the food in the world, on the field and stored by
       creatures spoil (disappear) at the end of the day?
+    creature_meat_value: float; how much food do I get if I eat a creature?
     """
   def __init__(self,
                field_size,
@@ -47,9 +49,10 @@ class World:
                creature_mutation="NORMAL",
                creature_reproduction_mutation_prob=0,
                creatures_randomly_teleport=False,
+               field_has_boundaries=False,
                food_spoils=False,
                creature_meat_value=2):
-    self.field = Field(field_size)
+    self.field = Field(field_size, has_boundaries=field_has_boundaries)
     self.field.sprout(food_fill_factor)
     self.creatures = []
     self.creatures_by_loc = [
@@ -177,7 +180,10 @@ class World:
     if type(time_of_day) == int:
       my_title += "; time: " + str(time_of_day)
     ax.set_title(my_title)
-    ax.axis('off')
+    ax.set_xticks([], [])
+    ax.set_yticks([], [])
+    if not self.field.has_boundaries:
+      ax.axis('off')
 
     if save_plot:
       file_name = TMP_DIR + datetime.now().strftime("world_%Y%m%d%H%M%S%f")
