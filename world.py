@@ -280,7 +280,7 @@ class World:
       if type(x_label) == str:
         ax.set_xlabel(x_label)
       ax.set_ylabel(y_label)
-      ax.set_ylim(0, upper_y)
+      ax.set_ylim(0, max(upper_y, 1))
 
     diet_types = set()
     # Get the set of all mutations throughout history.

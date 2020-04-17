@@ -21,7 +21,7 @@ def main():
       my_world=pickle.load(f)
   else:
     # Create a small world, with lots of food, rabbits and wolves.
-    field_size = 225
+    field_size = 100
     food_density = 0.07
     print("Creating World...")
     my_world = World(field_size,
@@ -37,7 +37,7 @@ def main():
     #                           creature_diet_type="SUPER_CARNIVORE",
     #                           creatures_randomly_teleport=True) # They all died if they don't....
 
-  for i in range(40):
+  for i in range(60):
     my_world.pass_day(40,
                       plot_steps=(True if i < 10 else False))
     my_world.show_me(save_plot=True)

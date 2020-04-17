@@ -1,6 +1,3 @@
-from SET_ME import TMP_DIR
-from world import World, DailyHistory
-
 import argparse
 import glob
 import matplotlib
@@ -11,6 +8,12 @@ import os
 import pandas as pd
 import pickle
 from scipy import stats
+
+import sys
+sys.path.insert(1, sys.path[0]+'/..')
+
+from SET_ME import TMP_DIR
+from world import World, DailyHistory
 
 def frac_true(series):
   listy = series.tolist()
@@ -31,7 +34,7 @@ def main():
     with open(TMP_DIR + args.data_pkl, "rb") as f:
       data=pickle.load(f)
   else:
-    print("Will save new data ", args.data_pkl)
+    print("Will save new data")
     data = pd.DataFrame(columns=[
         'steps_per_day',
         'trial',
@@ -42,7 +45,8 @@ def main():
         'avg_deaths',
         'sem_deaths',
         'creatures_survived',
-        'field_size']
+        'field_size',
+        'food_density']
     ).astype({
         'steps_per_day': 'int32',
         'trial': 'int32',
@@ -53,23 +57,25 @@ def main():
         'avg_deaths': 'int32',
         'sem_deaths': 'float64',
         'creatures_survived': 'bool',
-        'field_size': 'int64'})
+        'field_size': 'int64',
+        'food_density': 'float64'})
 
-  food_density = .03
+  food_density = .06
   stable_threshold=100
 
-  x_vals = range(100, 120, 20)
-  num_trials = 1
-  field_size = 13
+  num_steps_array = range(50, 70, 10)
+  num_trials = 5
+  field_size = 100
 
-  for i, num_steps in enumerate(x_vals):
+  for i, num_steps in enumerate(num_steps_array):
     for trial in range(num_trials):
       print("fraction done:",
-            np.round((i*num_trials+trial)/(len(x_vals)*num_trials), 2))
+            np.round((i*num_trials+trial)/(len(num_steps_array)*num_trials), 2))
       this_world = World(field_size,
                          food_density,
-                         int(np.round(field_size**2*food_density/2)),
-                         food_spoils=True)
+                         int(np.round(field_size**2*food_density)),
+                         food_spoils=True,
+                         creatures_randomly_teleport=True)
       for j in range(200):
         this_world.pass_day(num_steps)
       this_world.plot_history(save_plot=True)
@@ -86,7 +92,8 @@ def main():
           'avg_deaths': np.mean(death_history),
           'sem_deaths': stats.sem(death_history),
           'creatures_survived': this_world.history[-1].num_creatures > 0,
-          'field_size': this_world.field.field_size}
+          'field_size': this_world.field.field_size,
+          'food_density': food_density}
       data = pd.concat([data, pd.DataFrame(this_df, index=[i])])
 
   survived_data = data[data['creatures_survived']]
@@ -99,51 +106,55 @@ def main():
   # data.groupby('steps_per_day').agg({'creatures_survived': frac_true}).plot(ax=ax)
   for fs in sorted(frac_survived_df['field_size'].unique()):
     this_field_size_survival_data = frac_survived_df[frac_survived_df['field_size']==fs]
-    ax[0,0].errorbar(x=this_field_size_survival_data['steps_per_day'],
-                y=this_field_size_survival_data['creatures_survived']['frac_true'],
-                yerr=this_field_size_survival_data['creatures_survived']['d_frac_true'],
-                fmt='.', label="field_size: %i" % (fs))
+    ax[0,0].errorbar(
+        x=this_field_size_survival_data['steps_per_day'],
+        y=this_field_size_survival_data['creatures_survived']['frac_true'],
+        yerr=this_field_size_survival_data['creatures_survived']['d_frac_true'],
+        fmt='.', label="field_size: %i" % (fs)
+    )
   # ax[0,1].errorbar(x=survived_data['steps_per_day'],
   #             y=survived_data['avg_births'],
   #             yerr=survived_data['sem_births'],
   #             fmt='b.', label='Births')'
-  ax[0,0].set_xlabel('Steps per day (%f food density)' % (food_density))
+  ax[0,0].set_xlabel('Steps per day (%.02f food density)' % (food_density))
   ax[0,0].set_ylabel('frac sims w/ creatures after 200 days')
   ax[0,0].legend()
 
   for fs in sorted(survived_data['field_size'].unique()):
     this_field_size_survived_data = survived_data[survived_data['field_size']==fs]
-    ax[0,1].errorbar(x=this_field_size_survived_data['steps_per_day'],
-                     y=this_field_size_survived_data['avg_num_creatures']/np.ceil(fs**2*food_density),
-                     yerr=this_field_size_survived_data['sem_num_creatures']/np.ceil(fs**2*food_density),
-                     fmt='.', label="field_size: %i" % (fs))
-    ax[1,0].errorbar(x=this_field_size_survived_data['avg_births']/this_field_size_survived_data['avg_num_creatures'],
-                     y=this_field_size_survived_data['avg_deaths']/this_field_size_survived_data['avg_num_creatures'],
-                     xerr=np.sqrt((this_field_size_survived_data['sem_births']/this_field_size_survived_data['avg_num_creatures'])**2 +
-                        (this_field_size_survived_data['avg_births']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
-                     yerr=np.sqrt((this_field_size_survived_data['sem_deaths']/this_field_size_survived_data['avg_num_creatures'])**2 +
-                        (this_field_size_survived_data['avg_deaths']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
-                     fmt = '.', errorevery=3, label="field_size: %i" % (fs))
-    ax[1,1].errorbar(x=this_field_size_survived_data['steps_per_day']+np.random.choice(range(-4, 5), this_field_size_survived_data['steps_per_day'].shape[0]),
-                     y=this_field_size_survived_data['avg_births']/this_field_size_survived_data['avg_num_creatures'],
-                     yerr=np.sqrt((this_field_size_survived_data['sem_births']/this_field_size_survived_data['avg_num_creatures'])**2 +
-                         (this_field_size_survived_data['avg_births']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
-                     fmt='.', label="field_size: %i" % (fs))
+    ax[0,1].errorbar(
+        x=this_field_size_survived_data['steps_per_day'],
+        y=this_field_size_survived_data['avg_num_creatures']/np.ceil(fs**2*food_density),
+        yerr=this_field_size_survived_data['sem_num_creatures']/np.ceil(fs**2*food_density),
+        fmt='.', label="field_size: %i" % (fs)
+    )
+    ax[1,0].errorbar(
+        x=this_field_size_survived_data['avg_births']/this_field_size_survived_data['avg_num_creatures'],
+        y=this_field_size_survived_data['avg_deaths']/this_field_size_survived_data['avg_num_creatures'],
+        xerr=np.sqrt((this_field_size_survived_data['sem_births']/this_field_size_survived_data['avg_num_creatures'])**2 +
+            (this_field_size_survived_data['avg_births']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
+        yerr=np.sqrt((this_field_size_survived_data['sem_deaths']/this_field_size_survived_data['avg_num_creatures'])**2 +
+            (this_field_size_survived_data['avg_deaths']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
+        fmt = '.', errorevery=5, label="field_size: %i" % (fs))
+    ax[1,1].errorbar(
+        x=this_field_size_survived_data['steps_per_day'] +
+            np.random.choice(np.arange(-1, 2.1, .1), this_field_size_survived_data['steps_per_day'].shape[0]),
+        y=this_field_size_survived_data['avg_births']/this_field_size_survived_data['avg_num_creatures'],
+        yerr=np.sqrt((this_field_size_survived_data['sem_births']/this_field_size_survived_data['avg_num_creatures'])**2 +
+            (this_field_size_survived_data['avg_births']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
+        fmt='.', label="field_size: %i" % (fs))
 
-  ax[0,1].set_xlabel('Steps per day (%f food density)' % (food_density))
-  ax[0,1].set_ylabel('Avg creatures day 100-200 / food sprouted per day')
-  ax[0,1].legend()
+  ax[0,1].set_xlabel('Steps per day (%.02f food density)' % (food_density))
+  ax[0,1].set_ylabel('Avg creatures / food sprout rate')
 
   ax[1,0].set_xlabel('Births per Creature')
   ax[1,0].set_ylabel('Deaths per Creature')
   ax[1,0].set_aspect('equal')
-  ax[1,0].legend()
 
-  ax[1,1].set_xlabel('Steps per day (0.01 food density)')
+  ax[1,1].set_xlabel('Steps per day (%.02f food density)' % (food_density))
   ax[1,1].set_ylabel('Births per Creature')
-  ax[1,1].legend()
 
-  fig.savefig(TMP_DIR + "lifetime_summmary.png", fmt='png')
+  fig.savefig(TMP_DIR + "lifetime_summary.png", fmt='png')
   plt.close()
 
   with open(TMP_DIR + "data.pkl", "wb") as f:
