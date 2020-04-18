@@ -27,7 +27,7 @@ def main():
     my_world = World(field_size,
                      food_density,
                      1,
-                     field_has_boundaries=True,
+                     field_has_boundaries=False,
                      creature_reproduction_mutation_prob=0.05)
     # Overwrite location to start the creature near the middle of the map.
     my_world.creatures[0].location = [20, 20]
