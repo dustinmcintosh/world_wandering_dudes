@@ -59,7 +59,7 @@ class Creature:
     """
     direction = self._udlr[np.random.choice(4)]
 
-    # Dead creatures can't move (or grab). :(
+    # Dead dudes can't move (or grab). :(
     if not self.is_alive:
       return
 
