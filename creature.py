@@ -46,17 +46,18 @@ class Creature:
     self.is_alive = True
     self.meat_value = meat_value
 
+    # udlr = up, down, left, right - choices for movement.
+    self._udlr = [[0,1], [0,-1], [-1,0], [1,0]]
+
   def move_and_grab(self, world):
-    """Move along the field (see Field.py) and store any food you find.
+    """Move through the world and store any food you find.
 
     Most creatures move 1 space in random dir., fast creatures move 2 spaces.
 
     Arguments:
       world: world; Other creatures and a field to interact with.
     """
-    # udlr = up, down, left, right - choices for movement.
-    udlr = [[0,1], [0,-1], [-1,0], [1,0]]
-    direction = udlr[np.random.choice(4)]
+    direction = self._udlr[np.random.choice(4)]
 
     # Dead creatures can't move (or grab). :(
     if not self.is_alive:
@@ -85,13 +86,13 @@ class Creature:
       else:
         # Move.
         self.location[0] = self.location[0] + direction[0]
+        self.location[1] = self.location[1] + direction[1]
 
         # If you ran off the field in x-axis, appear on the other side.
         if self.location[0] < 0:
           self.location[0] = world.field.field_size + self.location[0]
         if self.location[0] > world.field.field_size-1:
           self.location[0] = self.location[0] - world.field.field_size
-        self.location[1] = self.location[1] + direction[1]
 
         # If you ran off the field in y-axis, appear on the other side.
         if self.location[1] < 0:

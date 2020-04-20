@@ -1,6 +1,5 @@
 import collections
 from datetime import datetime
-import pytz
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
