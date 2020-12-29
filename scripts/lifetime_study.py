@@ -60,11 +60,11 @@ def main():
         'field_size': 'int64',
         'food_density': 'float64'})
 
-  food_density = .06
+  food_density = .03
   stable_threshold=100
 
-  num_steps_array = range(50, 70, 10)
-  num_trials = 5
+  num_steps_array = range(60, 70, 10)
+  num_trials = 1
   field_size = 100
 
   for i, num_steps in enumerate(num_steps_array):
@@ -143,6 +143,17 @@ def main():
         yerr=np.sqrt((this_field_size_survived_data['sem_births']/this_field_size_survived_data['avg_num_creatures'])**2 +
             (this_field_size_survived_data['avg_births']*this_field_size_survived_data['sem_num_creatures']/this_field_size_survived_data['avg_num_creatures']**2)**2),
         fmt='.', label="field_size: %i" % (fs))
+
+  n_array = np.arange(70, 200)
+
+  avg_n = 0.908777*n_array**0.871139
+  # sigma_n = 0.232983*N**0.776118
+  p_0 = (1-food_density)**avg_n
+  p_1 = avg_n*food_density*(1-food_density)**(avg_n-1)
+  p_2 = avg_n**2/2*food_density**2*(1-food_density)**(avg_n-2)
+  p_2plus = 1-p_0-p_1
+  # ax[0,1].plot(n_array, 2*(p_2plus-p_0)/(food_density*avg_n))
+  ax[0,1].plot(n_array, 1/3*(p_2plus-p_0)/(food_density*avg_n*2*1/8*(p_1+p_2)))
 
   ax[0,1].set_xlabel('Steps per day (%.02f food density)' % (food_density))
   ax[0,1].set_ylabel('Avg creatures / food sprout rate')
