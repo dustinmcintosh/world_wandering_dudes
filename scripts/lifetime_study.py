@@ -61,11 +61,11 @@ def main():
         'food_density': 'float64'})
 
   food_density = .03
-  stable_threshold=100
+  stable_threshold = 100
 
-  num_steps_array = range(60, 70, 10)
-  num_trials = 1
-  field_size = 100
+  num_steps_array = range(40, 80, 10)
+  num_trials = 3
+  field_size = 25
 
   for i, num_steps in enumerate(num_steps_array):
     for trial in range(num_trials):
@@ -117,15 +117,11 @@ def main():
         fmt='.', label="%i" % (fs)
     )
   ax1.set_ylim(-0.05, 1.05)
-  # ax[0,1].errorbar(x=survived_data['steps_per_day'],
-  #             y=survived_data['avg_births'],
-  #             yerr=survived_data['sem_births'],
-  #             fmt='b.', label='Births')'
   ax1.set_xlabel('Steps per day (food density = %.02f)' % (food_density))
   ax1.set_ylabel('frac sims w/ creatures after 200 days')
   ax1.legend(title="Linear Field Size ($\sqrt{M}$)")
 
-  ax1.plot([72.4, 72.4], [-.5, 1.5], '-.', color='0.8', label=None) # ax[0,1].
+  ax1.plot([72.4, 72.4], [-.5, 1.5], '-.', color='0.8', label=None) # [72.4, 72.4]
   for fs in sorted(survived_data['field_size'].unique()):
     this_field_size_survived_data = survived_data[survived_data['field_size']==fs]
     ax2.errorbar(
@@ -154,7 +150,7 @@ def main():
   ax4.plot([72, 200], [0.315, 0.315], '-.', color='0.8', label=None)
   ax4.plot([72, 200], [0.3333, 0.3333], '-.', color='0.8', label=None)
 
-  n_array = np.arange(72, 200)
+  n_array = np.arange(40, 200)
 
   avg_n = 0.908777*n_array**0.871139
   # sigma_n = 0.232983*n_array**0.776118
